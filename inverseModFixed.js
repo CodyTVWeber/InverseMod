@@ -199,6 +199,20 @@ function inverseMod(x, y) {
 }
 
 /**
+ * Returns lightweight stats for complexity analysis
+ * @param {number} x
+ * @param {number} y
+ * @returns {{steps:number, z:number, success:boolean}}
+ */
+function inverseModStats(x, y) {
+    const { result, z } = inverseModFull(x, y);
+    const stepMatches = result.match(/Step \d+:/g) || [];
+    const steps = stepMatches.length;
+    const success = ((z * x) % y) === 1;
+    return { steps, z, success };
+}
+
+/**
  * Validates if a number is a positive integer
  * @param {any} value - Value to check
  * @returns {boolean} True if positive integer
@@ -248,7 +262,8 @@ if (typeof module !== 'undefined' && module.exports) {
         checkSpecialCases,
         runInverseMod,
         isPositiveInteger,
-        gcd
+        gcd,
+        inverseModStats
     };
 } else if (typeof window !== 'undefined') {
     // Browser environment
@@ -260,6 +275,7 @@ if (typeof module !== 'undefined' && module.exports) {
         checkSpecialCases,
         runInverseMod,
         isPositiveInteger,
-        gcd
+        gcd,
+        inverseModStats
     };
 }
