@@ -75,7 +75,7 @@ function testEdgeCases() {
     
     // Test larger numbers
     testCase(17, 23, 19, "Larger numbers: 17 mod 23");
-    testCase(31, 37, 27, "Larger numbers: 31 mod 37");
+    testCase(31, 37, 6, "Larger numbers: 31 mod 37");
 }
 
 /**

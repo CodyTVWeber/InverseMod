@@ -110,11 +110,9 @@ function inverseModFull(x, y) {
     }
 
     // Calculate initial k value
-    if (y % currentX === 0) {
-        k.push(Math.floor(y / currentX));
-    } else {
-        k.push(Math.floor(y / currentX) + 1);
-    }
+    // Use ceil(y/currentX) to ensure (currentX * k) > y and avoid r = 0 when currentX | y
+    let k1 = Math.floor(y / currentX) + 1;
+    k.push(k1);
     
     r.push((currentX * k[0]) % y);
     result += `Step 1: ${y} < (${currentX} * ${k[0]}) < (${y} + ${currentX}), ((${currentX} * ${k[0]}) % ${y}) = ${r[0]}\n`;

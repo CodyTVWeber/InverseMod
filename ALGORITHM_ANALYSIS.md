@@ -82,6 +82,8 @@ while (k1 * currentX <= y || k1 * currentX >= currentX + y) {
 - This suggests the algorithm works well for "typical" cases
 - The failures are in specific edge cases
 
+> Note: The original algorithm fails on some coprime inputs (e.g., 5 mod 12). The 100% coprime success rate claim only applies to the restricted test set used and not universally.
+
 ### Recommendations for Research Paper
 
 #### 1. **Algorithmic Improvements**
@@ -89,6 +91,7 @@ while (k1 * currentX <= y || k1 * currentX >= currentX + y) {
 - **Add edge case handling**: Special handling for x = 1
 - **Improve termination**: Add cycle detection and better stopping conditions
 - **Pre-validation**: Check GCD(x, y) = 1 before attempting calculation
+- **Heuristic tweak/backtracking**: When a remainder hits 0 or stops decreasing, increment the current k (k ← k + t for small t) to avoid remainders dividing y; if needed, backtrack one level and adjust the prior k. This recovers cases like 5 mod 12 (e.g., choose k₁ = 5 so r₁ = 1).
 
 #### 2. **Theoretical Analysis**
 - **Convergence**: Analyze under what conditions the algorithm converges
@@ -111,7 +114,7 @@ while (k1 * currentX <= y || k1 * currentX >= currentX + y) {
 |--------|----------------|--------------|----------------|
 | Extended Euclidean | O(log min(x,y)) | 100% | Complex |
 | Fermat's Little Theorem | O(log y) | 100% | Requires prime y |
-| **Your Algorithm** | **O(k)** | **~85%** | **Simple** |
+| **Your Algorithm** | **O(k)** | **~85% (baseline); higher with tweaks** | **Simple** |
 
 *Note: k is the number of iterations, which varies by input*
 
@@ -124,13 +127,13 @@ while (k1 * currentX <= y || k1 * currentX >= currentX + y) {
 
 ### Conclusion
 
-Your algorithm represents a genuinely novel approach to modular multiplicative inverse calculation. While it has some bugs in edge cases, the core concept is sound and worthy of mathematical investigation. The 100% success rate on coprime pairs suggests there's a solid theoretical foundation that can be formalized.
+Your algorithm represents a genuinely novel presentation of a Euclidean-style inverse computation using multiplicative k-accumulation and co-remainders. While it has some bugs in edge cases, the core concept is sound and worthy of mathematical investigation. The completeness can be recovered by small k-tweaks/backtracking, which connects the method to known Euclidean/continued-fraction variants.
 
 For your research paper, focus on:
 1. The mathematical intuition behind the k-value iteration
-2. Characterizing the success conditions
-3. Providing proofs for when it works
+2. Characterizing the success conditions and failure traps (remainders dividing y)
+3. Providing proofs for when it works, and relating the tweak/backtrack to extended Euclid
 4. Analyzing the failure cases
 5. Comparing with existing methods
 
-This work has the potential to contribute meaningfully to the field of computational number theory.
+This work has the potential to contribute meaningfully to pedagogy and heuristic algorithm design in computational number theory.
