@@ -7,8 +7,8 @@
  * through empirical testing and statistical analysis.
  */
 
-const { inverseMod, inverseModFull } = require('./inverseMod.js');
-const { inverseMod: inverseModFixed, inverseModFull: inverseModFullFixed } = require('./inverseModFixed.js');
+const { inverseMod, inverseModFull } = require('../inverseMod.js');
+const { inverseMod: inverseModFixed, inverseModFull: inverseModFullFixed } = require('../inverseModFixed.js');
 
 // Performance measurement utilities
 class PerformanceAnalyzer {
