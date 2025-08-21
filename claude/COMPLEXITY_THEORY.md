@@ -7,8 +7,7 @@
 
 The InverseMod algorithm finds the modular multiplicative inverse through iterative remainder reduction:
 
-```
-Given: x mod y, find z such that (z * x) mod y = 1
+**Given**: x mod y, find z such that (z * x) mod y = 1
 
 1. Find k₁ such that y < (x * k₁) < (x + y)
 2. Compute r₁ = (x * k₁) mod y
@@ -16,7 +15,6 @@ Given: x mod y, find z such that (z * x) mod y = 1
    - Find kᵢ₊₁ such that y < (rᵢ * kᵢ₊₁) < (rᵢ + y)
    - Compute rᵢ₊₁ = (rᵢ * kᵢ₊₁) mod y
 4. z = (k₁ * k₂ * ... * kₙ) mod y
-```
 
 ---
 
@@ -25,7 +23,7 @@ Given: x mod y, find z such that (z * x) mod y = 1
 ### 2.1 Best Case: O(1)
 When x = y - 1, the algorithm often terminates in just 1-2 iterations.
 
-Example: 6 mod 7
+**Example: 6 mod 7**
 - k₁ = 2, r₁ = (6 * 2) mod 7 = 5
 - k₂ = 2, r₂ = (5 * 2) mod 7 = 3
 - k₃ = 3, r₃ = (3 * 3) mod 7 = 2
@@ -92,12 +90,10 @@ This uniform distribution assumption leads to:
 
 ### 5.1 Convergence Condition
 The algorithm converges when:
-```
 ∃ k₁, k₂, ..., kₙ such that:
 - y < (x * k₁) < (x + y)
 - y < (rᵢ * kᵢ₊₁) < (rᵢ + y) for all i
 - rₙ = 1
-```
 
 ### 5.2 Failure Modes
 The algorithm fails when:
