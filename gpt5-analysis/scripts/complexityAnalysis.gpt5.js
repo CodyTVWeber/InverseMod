@@ -1,7 +1,7 @@
 /* GPT-5 Complexity Analysis Script (snapshot) */
 const fs = require('fs');
 const path = require('path');
-const { inverseModStats, gcd } = require('../../inverseModFixed');
+const { inverseModStats, gcd } = require('../code/inverseModFixed.gpt5.js');
 
 function analyzeRange(maxY, samplePerY = 0) {
     const rows = [];
@@ -62,16 +62,30 @@ function printSummary(summary) {
 
 function main() {
     const maxY = parseInt(process.argv[2] || '200', 10);
-    const sample = parseInt(process.argv[3] || '0', 10);
+    const sample = parseInt(process.argv[3] || '0', 10); // 0 means full coprime set
     console.log(`Running empirical complexity up to y=${maxY}${sample>0?`, samplePerY=${sample}`:''} ...`);
     const rows = analyzeRange(maxY, sample);
+
     const outDir = path.join(__dirname, '..', 'out');
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
     const outPath = path.join(outDir, `complexity_y${maxY}_s${sample}.csv`);
     writeCsv(rows, outPath);
     console.log(`CSV written: ${outPath}`);
+
     const summary = summarize(rows);
     printSummary(summary);
+
+    // crude linear fit of avgSteps ~ a*log2(y) + b
+    const xs = summary.map(s => Math.log2(s.y));
+    const ys = summary.map(s => s.avgSteps);
+    const n = xs.length;
+    const meanX = xs.reduce((a,b)=>a+b,0)/n;
+    const meanY = ys.reduce((a,b)=>a+b,0)/n;
+    let num = 0, den = 0;
+    for (let i=0;i<n;i++) { num += (xs[i]-meanX)*(ys[i]-meanY); den += (xs[i]-meanX)**2; }
+    const a = num/den;
+    const b = meanY - a*meanX;
+    console.log(`\nRegression avgSteps ≈ ${a.toFixed(3)} * log2(y) + ${b.toFixed(3)} (R^2 not computed)`);
 }
 
 if (require.main === module) {
