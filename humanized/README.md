@@ -1,10 +1,6 @@
 # Humanized Modular Inverse
 
-This module computes the modular multiplicative inverse in a way that is easy to read and reason about. It combines:
-
-- Cody Weber's iterative multiplier–remainder idea (with clear names)
-- Small, bounded backtracking to avoid known failure modes
-- A guaranteed fallback to the extended Euclidean algorithm
+This module computes the modular multiplicative inverse using Cody Weber's iterative multiplier–remainder idea, written with clear, self-documenting names. It uses a bounded backtracking heuristic only (no extended Euclidean fallback in this module).
 
 ## What it returns
 
@@ -14,7 +10,7 @@ This module computes the modular multiplicative inverse in a way that is easy to
 {
 	success: boolean,
 	inverse: number | null,
-	method: 'heuristic' | 'extended_euclid' | 'none',
+	method: 'heuristic' | 'none',
 	details?: {
 		multipliers: number[],
 		remainders: number[],
@@ -26,13 +22,13 @@ This module computes the modular multiplicative inverse in a way that is easy to
 
 - If `gcd(base, modulus) !== 1`, no inverse exists and `success` is false.
 - If the heuristic succeeds, `method` is `heuristic` and includes the multipliers and remainders it used.
-- Otherwise the module falls back to `extended_euclid` and returns that inverse.
+- If the bounded search exhausts options without success, `success` is false.
 
 ## Why this is readable
 
-- We use names like `remainder`, `multiplier`, and `computeGreatestCommonDivisor` instead of single letters.
-- We separate concerns: GCD check, heuristic search, and fallback.
-- The heuristic search explores only a tiny set of multipliers at each step (ceil(modulus/remainder) plus a few small offsets) and backtracks a limited depth.
+- Names like `remainder`, `multiplier`, and `computeGreatestCommonDivisor` instead of single letters.
+- Clear separation of concerns: GCD check and heuristic search.
+- Tiny, bounded exploration using `ceil(modulus/remainder)` plus small offsets.
 
 ## Quick start
 
@@ -55,4 +51,4 @@ console.log(explainHeuristicRun(5, 12));
 
 ## Heuristic in one paragraph
 
-Start from `currentRemainder = base % modulus`. Choose `multiplier = ceil(modulus/currentRemainder) + offset` for small offsets (0,1,2,3). Update `currentRemainder = (currentRemainder * multiplier) % modulus`. If the remainder reaches 1, the inverse is the product of chosen multipliers (mod modulus). If the remainder becomes 0 or stops decreasing, backtrack and try a different small offset. If the bounded search exhausts options, we return the inverse from the extended Euclidean algorithm.
+Start from `currentRemainder = base % modulus`. Choose `multiplier = ceil(modulus/currentRemainder) + offset` for small offsets (0,1,2,3). Update `currentRemainder = (currentRemainder * multiplier) % modulus`. If the remainder reaches 1, the inverse is the product of chosen multipliers (mod modulus). If the remainder becomes 0 or stops decreasing, backtrack and try a different small offset. If the bounded search exhausts options, the function returns `success: false` and does not fall back to other algorithms.

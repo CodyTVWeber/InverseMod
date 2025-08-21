@@ -5,8 +5,7 @@
  * (inverse * base) % modulus === 1, if it exists.
  *
  * This implementation follows Cody Weber's k-multiplier/remainder iteration idea
- * with practical safeguards and backtracking, then falls back to the
- * extended Euclidean algorithm to guarantee a result for coprime pairs.
+ * with practical safeguards and bounded backtracking.
  *
  * Design principles applied:
  * - Clear, descriptive names (no single-letter r/k)
@@ -28,29 +27,6 @@ function computeGreatestCommonDivisor(a, b) {
 		valueB = remainder;
 	}
 	return valueA;
-}
-
-/**
- * Extended Euclidean algorithm.
- * Returns an object { gcd, coefficientA, coefficientB } such that
- * coefficientA * a + coefficientB * b = gcd(a, b).
- */
-function computeExtendedGcd(a, b) {
-	let oldRemainder = a;
-	let remainder = b;
-	let oldCoefficientA = 1; // s
-	let coefficientA = 0;    // s'
-	let oldCoefficientB = 0; // t
-	let coefficientB = 1;    // t'
-
-	while (remainder !== 0) {
-		const quotient = Math.floor(oldRemainder / remainder);
-		[oldRemainder, remainder] = [remainder, oldRemainder - quotient * remainder];
-		[oldCoefficientA, coefficientA] = [coefficientA, oldCoefficientA - quotient * coefficientA];
-		[oldCoefficientB, coefficientB] = [coefficientB, oldCoefficientB - quotient * coefficientB];
-	}
-
-	return { gcd: Math.abs(oldRemainder), coefficientA: oldCoefficientA, coefficientB: oldCoefficientB };
 }
 
 /**
@@ -146,13 +122,13 @@ function findInverseWithBacktracking(base, modulus, options = {}) {
 }
 
 /**
- * Public API: compute the modular inverse using heuristic search, with guaranteed fallback.
+ * Public API: compute the modular inverse using heuristic search only.
  *
  * Returns an object:
  * {
  *   success: boolean,
  *   inverse: number | null,
- *   method: 'heuristic' | 'extended_euclid' | 'none',
+ *   method: 'heuristic' | 'none',
  *   details: { multipliers, remainders, exploredNodes } | null
  * }
  */
@@ -168,7 +144,7 @@ function computeModularInverse(base, modulus, options = {}) {
 		return { success: false, inverse: null, method: 'none', details: null, reason: `No inverse exists; gcd(${base}, ${modulus}) = ${gcd}` };
 	}
 
-	// Try heuristic with backtracking first
+	// Heuristic with backtracking only
 	const heuristic = findInverseWithBacktracking(base, modulus, options);
 	if (heuristic.found) {
 		return {
@@ -183,15 +159,7 @@ function computeModularInverse(base, modulus, options = {}) {
 		};
 	}
 
-	// Guaranteed fallback: extended Euclidean algorithm
-	const egcd = computeExtendedGcd(base, modulus);
-	if (egcd.gcd !== 1) {
-		// Should not happen given the earlier gcd check, but guard anyway
-		return { success: false, inverse: null, method: 'none', details: null, reason: `No inverse exists; gcd(${base}, ${modulus}) = ${egcd.gcd}` };
-	}
-	let inverse = egcd.coefficientA % modulus;
-	if (inverse < 0) inverse += modulus;
-	return { success: true, inverse, method: 'extended_euclid', details: null };
+	return { success: false, inverse: null, method: 'none', details: null, reason: 'Heuristic search did not find an inverse within bounds' };
 }
 
 /**
@@ -215,11 +183,6 @@ function explainHeuristicRun(base, modulus, options = {}) {
 	lines.push(`Calculating inverse of ${base} mod ${modulus}...`);
 	if (!attempt.found) {
 		lines.push(`Heuristic search failed after exploring ${attempt.exploredNodes} nodes.`);
-		lines.push(`Falling back to extended Euclid.`);
-		const egcd = computeExtendedGcd(base, modulus);
-		let inverse = egcd.coefficientA % modulus;
-		if (inverse < 0) inverse += modulus;
-		lines.push(`Extended Euclid inverse = ${inverse}`);
 		return lines.join('\n');
 	}
 	lines.push(`Heuristic found a solution after exploring ${attempt.exploredNodes} nodes.`);
@@ -232,7 +195,6 @@ function explainHeuristicRun(base, modulus, options = {}) {
 
 module.exports = {
 	computeGreatestCommonDivisor,
-	computeExtendedGcd,
 	computeModularInverse,
 	modularInverse,
 	explainHeuristicRun,
