@@ -51,6 +51,24 @@ function targetedParityCases() {
 
     // Odd remainder mod even modulus cases aiming to avoid gcd-induced zeros
     testCase(9, 20, undefined, "9 mod 20 (even modulus)");
+
+    // More cases similar to 5 mod 12
+    // y = 14
+    testCase(9, 14, undefined, "9 mod 14 (even modulus)");
+    // y = 16
+    testCase(5, 16, undefined, "5 mod 16 (even modulus)");
+    testCase(7, 16, undefined, "7 mod 16 (even modulus)");
+    testCase(9, 16, undefined, "9 mod 16 (even modulus)");
+    testCase(11, 16, undefined, "11 mod 16 (even modulus)");
+    // y = 18
+    testCase(5, 18, undefined, "5 mod 18 (even modulus)");
+    testCase(7, 18, undefined, "7 mod 18 (even modulus)");
+    testCase(11, 18, undefined, "11 mod 18 (even modulus)");
+    testCase(13, 18, undefined, "13 mod 18 (even modulus)");
+    // y = 20
+    testCase(11, 20, undefined, "11 mod 20 (even modulus)");
+    testCase(13, 20, undefined, "13 mod 20 (even modulus)");
+    testCase(17, 20, undefined, "17 mod 20 (even modulus)");
 }
 
 function main() {
