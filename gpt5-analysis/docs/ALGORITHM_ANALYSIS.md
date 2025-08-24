@@ -91,7 +91,7 @@ while (k1 * currentX <= y || k1 * currentX >= currentX + y) {
 - **Add edge case handling**: Special handling for x = 1
 - **Improve termination**: Add cycle detection and better stopping conditions
 - **Pre-validation**: Check GCD(x, y) = 1 before attempting calculation
-- **Heuristic tweak/backtracking**: When a remainder hits 0 or stops decreasing, increment the current k (k ← k + t for small t) to avoid remainders dividing y; if needed, backtrack one level and adjust the prior k. This recovers cases like 5 mod 12 (e.g., choose k₁ = 5 so r₁ = 1).
+- **Heuristic tweak/backtracking**: When a remainder hits 0 or stops decreasing, increment the current k (k ← k + t for small t) to avoid remainders dividing y; if needed, backtrack one level and adjust the prior k. This recovers cases like 5 mod 12 (e.g., choose k₁ = 5 so r₁ = 1). In the GPT-5 variant, we added: (a) parity-aware backtracking for even-remainder under even modulus by incrementing the earliest odd k by 2 and recomputing; (b) small local k adjustments to escape immediate traps; and (c) a gcd-triggered backtrack when gcd(r, y) > 1.
 
 #### 2. **Theoretical Analysis**
 - **Convergence**: Analyze under what conditions the algorithm converges
