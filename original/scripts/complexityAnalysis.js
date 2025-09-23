@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { inverseModStats, gcd } = require('../inverseModFixed');
+const { inverseModStats, gcd } = require('../js/inverseModFixed');
 
 function analyzeRange(maxY, samplePerY = 0) {
     const rows = [];

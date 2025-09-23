@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const Original = require('../inverseMod.js');
-const Fixed = require('../inverseModFixed.js');
+const Original = require('../../original/js/inverseMod.js');
+const Fixed = require('../../original/js/inverseModFixed.js');
 const Human = require('./modularInverse.js');
 
 function runOne(x, y) {
