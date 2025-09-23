@@ -75,7 +75,7 @@ function main() {
     console.log(`Running empirical complexity up to y=${maxY}${sample>0?`, samplePerY=${sample}`:''} ...`);
     const rows = analyzeRange(maxY, sample);
 
-    const outDir = path.join(__dirname, '..', 'out');
+    const outDir = path.join(__dirname, '..', '..', 'data', 'original');
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir);
     const outPath = path.join(outDir, `complexity_y${maxY}_s${sample}.csv`);
     writeCsv(rows, outPath);

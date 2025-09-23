@@ -22,24 +22,53 @@ The algorithm uses a series of k-values and r-values where:
 ### Validation
 The result is validated by checking if (z * x) mod y == 1
 
-## Implementation
-- **Go**: Original implementation with HTTP server endpoints
-- **JavaScript**: Port of the algorithm for web-based usage
+## Repository Structure
+
+- `original/`: Original code and demos
+  - `go/`: Go implementation and module files
+  - `scripts/`: Empirical complexity scripts
+  - `demo.html`: Browser demo for original, fixed, and robust versions
+  - `inverseMod.js`, `inverseModFixed.js`, `inverseModRobust.js`: JS implementations
+- `ai/`: AI analyses and code snapshots
+  - `gpt5/`: GPT‑5 analysis (docs, scripts, code, out)
+  - `claude/`: Claude analysis (docs, scripts, viz)
+  - `supernova/`: Additional AI analysis with code and docs
+  - `humanized/`: Humanized variants and measurements
+- `docs/`: Top-level algorithm reviews and write-ups
+- `data/`: Centralized data artifacts
+  - `original/`: CSV outputs from original analysis scripts
+
+The top-level `README.md` stays here and links to key areas.
 
 ## Usage
-The Go implementation provides HTTP endpoints:
-- `/inverse-mod?x=<integer>&y=<integer>` - Shows detailed steps
-- `/inverse-mod-z?x=<integer>&y=<integer>` - Returns just the result
+
+### Browser Demo
+Open `original/demo.html` in a browser, pick a version, and compute inverses interactively.
+
+### Go HTTP Endpoints
+From `original/go/`:
+```
+go run InverseMod.go
+```
+Endpoints:
+- `/inverse-mod?x=<integer>&y=<integer>` - Detailed steps
+- `/inverse-mod-z?x=<integer>&y=<integer>` - Just the result
 - `/inverse-mod-explanation` - Algorithm explanation
 
 ## Complexity Analysis
-- We provide an empirical analysis script that measures the number of iteration steps as a function of y.
-- Run:
+- Empirical analysis script measuring steps vs y lives in `original/scripts/complexityAnalysis.js`.
+- Run from the repository root:
 ```bash
-node scripts/complexityAnalysis.js 200    # scan y up to 200, full coprime x
-node scripts/complexityAnalysis.js 200 5  # sample 5 x-values per y
+node original/scripts/complexityAnalysis.js 200    # scan y up to 200, full coprime x
+node original/scripts/complexityAnalysis.js 200 5  # sample 5 x-values per y
 ```
-- Outputs CSV under `out/` and prints summary with a regression against log2(y).
+- Outputs CSV under `data/original/` and prints summary with a regression against log2(y).
+
+## AI Analyses and Findings
+- GPT‑5: see `ai/gpt5/README.md` and `ai/gpt5/docs/` for algorithm reviews and analysis, with scripts under `ai/gpt5/scripts/` and outputs in `ai/gpt5/out/`.
+- Claude: see `ai/claude/README.md`, `ai/claude/COMPLEXITY_THEORY.md`, and `ai/claude/VERIFICATION_REPORT.md`.
+- Supernova: see `ai/supernova/README.md` and `ai/supernova/docs/`.
+- Humanized: see `ai/humanized/README.md` for simplified variants and `complexity.csv`.
 
 ## Research Status
 This algorithm is under active development for formal mathematical publication. The implementation may contain bugs that are being investigated and resolved.
