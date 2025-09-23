@@ -52,6 +52,16 @@ This folder contains my independent assessment of Cody Weber's InverseMod algori
 - **Content:** Comparison with existing methods, uniqueness evaluation
 - **Key Topics:** Literature search, educational value, research potential
 
+### 🔄 Backtracking Analysis
+- **File:** `docs/BACKTRACKING_ANALYSIS.md`
+- **Content:** Detailed analysis of backtracking enhancement and alternatives
+- **Key Topics:** Algorithm improvements, performance comparison, theoretical bounds
+
+### 🚀 Alternative Strategies
+- **File:** `docs/ALTERNATIVE_STRATEGIES.md`
+- **Content:** Exploration of improvement strategies beyond backtracking
+- **Key Topics:** Binary search, heuristics, parallel exploration, hybrid approaches
+
 ---
 
 ## Comparison with Other AI Assessments
