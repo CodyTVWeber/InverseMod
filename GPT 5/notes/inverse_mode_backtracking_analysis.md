@@ -24,46 +24,54 @@ Key assumptions and caveats:
 
 High-level outline with backtracking and pruning:
 
-```python
-def inverse_backtrack(goal_state, is_base, inverse_ops, is_valid, order_ops, cache=None, limit=None):
-    # goal_state: target we want to explain via inverse construction
-    # is_base: predicate that recognizes a start/base state
-    # inverse_ops: generator of applicable inverse operators for a state
-    # is_valid: fast constraint check for partial states
-    # order_ops: heuristic ordering function for branching
-    # cache: optional memo/transposition table for visited canonical states
-    # limit: optional depth or node expansion limit
+```js
+function inverseBacktrack(goalState, isBase, inverseOps, isValid, orderOps, cache = null, limit = null) {
+    // goalState: target we want to explain via inverse construction
+    // isBase: predicate that recognizes a start/base state
+    // inverseOps: generator/iterator of applicable inverse operators for a state
+    // isValid: fast constraint check for partial states
+    // orderOps: heuristic ordering function for branching
+    // cache: optional memo/transposition table for visited canonical states
+    // limit: optional depth or node expansion limit
 
-    stack = [(goal_state, [])]  # (state, path_of_inverse_ops)
-    visited = cache if cache is not None else set()
+    const stack = [[goalState, []]]; // [state, pathOfInverseOps]
+    const visited = cache !== null ? cache : new Set();
 
-    while stack:
-        state, path = stack.pop()
+    while (stack.length > 0) {
+        const [state, path] = stack.pop();
 
-        if limit is not None and len(path) > limit:
-            continue
+        if (limit !== null && path.length > limit) {
+            continue;
+        }
 
-        key = canonicalize(state)
-        if key in visited:
-            continue
-        visited.add(key)
+        const key = canonicalize(state);
+        if (visited.has(key)) {
+            continue;
+        }
+        visited.add(key);
 
-        if not is_valid(state):
-            continue
+        if (!isValid(state)) {
+            continue;
+        }
 
-        if is_base(state):
-            return reconstruct_forward(path)  # reverse the inverse ops
+        if (isBase(state)) {
+            return reconstructForward(path); // reverse the inverse ops
+        }
 
-        ops = list(inverse_ops(state))
-        ops = order_ops(state, ops)
+        let ops = Array.from(inverseOps(state));
+        ops = orderOps(state, ops);
 
-        for op in ops:
-            next_state = op.apply(state)
-            if next_state is None:
-                continue
-            stack.append((next_state, path + [op]))
+        for (const op of ops) {
+            const nextState = op.apply(state);
+            if (nextState == null) {
+                continue;
+            }
+            stack.push([nextState, [...path, op]]);
+        }
+    }
 
-    return None  # no solution within limits
+    return null; // no solution within limits
+}
 ```
 
 Notes:
