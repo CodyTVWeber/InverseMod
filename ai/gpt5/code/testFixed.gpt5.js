@@ -133,7 +133,7 @@ function compareAlgorithms() {
     console.log("\n=== Algorithm Comparison ===\n");
     
     // Import original algorithm for comparison
-    const InverseMod = require('../../inverseMod.js');
+    const InverseMod = require('../../../original/js/inverseMod.js');
     
     const testCases = [
         { x: 5, y: 12, name: "5 mod 12" },

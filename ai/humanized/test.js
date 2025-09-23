@@ -2,8 +2,8 @@ const assert = require('assert');
 const path = require('path');
 
 const Human = require('./modularInverse.js');
-const Original = require('../inverseMod.js');
-const Fixed = require('../inverseModFixed.js');
+const Original = require('../../original/js/inverseMod.js');
+const Fixed = require('../../original/js/inverseModFixed.js');
 
 function expectInverse(moduleName, inverseFn, x, y, expected) {
 	const inv = inverseFn(x, y);
