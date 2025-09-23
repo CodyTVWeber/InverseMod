@@ -27,7 +27,7 @@ Process: From Draft to Publication
 
 ## Roles and Tools
 - Typesetting: LaTeX with BibTeX, `paper/Makefile`.
-- Testing: unit/property tests (pytest or similar).
+- Testing: unit/property tests (Vitest for TypeScript).
 - Packaging: top-level `Makefile`, scripts in `scripts/`.
 
 # Process: From Draft to Publication

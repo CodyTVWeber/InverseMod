@@ -1,0 +1,19 @@
+{
+  "name": "code-proof-paper",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:paper": "bash scripts/build_paper.sh",
+    "test": "vitest run --reporter=dot",
+    "test:watch": "vitest",
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist coverage || true && make -C paper clean || true"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.3"
+  }
+}
+

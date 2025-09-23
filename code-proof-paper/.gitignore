@@ -1,6 +1,6 @@
-.venv/
-__pycache__/
-*.pyc
+node_modules/
+dist/
+coverage/
 paper/*.aux
 paper/*.log
 paper/*.out
@@ -10,4 +10,5 @@ paper/*.fdb_latexmk
 paper/*.fls
 paper/*.synctex.gz
 notebooks/.ipynb_checkpoints/
+
 

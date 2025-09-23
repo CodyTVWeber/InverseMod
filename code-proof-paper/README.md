@@ -16,8 +16,12 @@ This repository scaffolds a formal paper that uses code as the primary vehicle f
 - `scripts/`: build and reproducibility scripts
 - `docs/`: outline, process, venue selection, checklists
 
+## Requirements
+- Node.js 20+ (or 22+) with npm
+- TeX distribution (e.g., TeX Live) with `latexmk`, `pdflatex`, `bibtex`
+
 ## Quick Start
-1. Bootstrap environment: `bash scripts/setup_environment.sh`
+1. Install Node deps: `bash scripts/setup_node.sh`
 2. Build the paper PDF: `bash scripts/build_paper.sh`
 3. Run tests for proof code: `bash scripts/test.sh`
 
@@ -45,9 +49,9 @@ This repository scaffolds a formal paper that uses code as the primary vehicle f
 - Link paper claims to exact code artifacts and tests.
 
 ## Reproducibility & Archival
-- Pin dependencies (see `requirements.txt`).
+- Pin dependencies (`package-lock.json`).
 - Provide one-command builds for paper and tests (`scripts/` and `Makefile`).
-- Record environment info (OS, versions) in the appendix and `docs/environment.txt`.
+- Record environment info (OS, Node, TeX) in the appendix and `docs/environment.txt`.
 - Maintain `docs/ARTIFACTS.md` mapping claims to files/tests/commands.
 
 ## Contributing & Review

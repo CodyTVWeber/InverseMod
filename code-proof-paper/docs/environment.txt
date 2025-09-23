@@ -1,6 +1,7 @@
 Record environment details here after setup to aid reproducibility:
 - OS and version:
-- Python version:
+- Node.js version:
+- npm version:
 - TeX distribution and versions:
-- Key package versions (pytest, etc.):
+- Key package versions (typescript, vitest):
 

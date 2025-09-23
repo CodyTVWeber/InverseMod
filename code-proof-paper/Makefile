@@ -6,9 +6,9 @@ paper:
 	$(MAKE) -C paper
 
 tests:
-	bash scripts/test.sh
+	bash scripts/setup_node.sh && bash scripts/test.sh
 
 clean:
 	$(MAKE) -C paper clean || true
-	rm -rf .venv
+	rm -rf node_modules dist coverage
 

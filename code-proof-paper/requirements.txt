@@ -1,3 +1,0 @@
-pytest==8.2.1
-hypothesis==6.112.0
-
