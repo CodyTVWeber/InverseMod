@@ -1,0 +1,6 @@
+Record environment details here after setup to aid reproducibility:
+- OS and version:
+- Python version:
+- TeX distribution and versions:
+- Key package versions (pytest, etc.):
+
