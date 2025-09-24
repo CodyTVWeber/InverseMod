@@ -3,13 +3,13 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "rootDir": "./code/src",
+    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
     "declaration": true,
     "sourceMap": true,
     "types": ["vitest/globals"]
   },
-  "include": ["code/src/**/*", "code/tests/**/*", "vitest.config.ts"]
+  "include": ["src/**/*", "tests/**/*", "vitest.config.ts"]
 }
 
