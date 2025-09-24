@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code-Backed Proof Paper - Interactive Writing Environment</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        .notebook-container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            border-left: 4px solid #e0e0e0;
+            padding-left: 20px;
+        }
+        
+        .section.active {
+            border-left-color: #2196F3;
+        }
+        
+        .section-header {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: -10px -20px 20px -20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        
+        .section-subtitle {
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0 0 0;
+        }
+        
+        .content-area {
+            min-height: 100px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background: white;
+        }
+        
+        .writing-area {
+            width: 100%;
+            min-height: 200px;
+            border: none;
+            outline: none;
+            font-family: 'Georgia', serif;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        
+        .code-area {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .code-editor {
+            width: 100%;
+            min-height: 150px;
+            border: none;
+            background: transparent;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            padding: 15px;
+            outline: none;
+            resize: vertical;
+        }
+        
+        .run-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        
+        .run-button:hover {
+            background: #218838;
+        }
+        
+        .output-area {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .guidelines {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .guidelines h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #2196f3);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .nav-button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .nav-button:hover {
+            background: #1976d2;
+        }
+        
+        .nav-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .table-of-contents {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        
+        .toc-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+        }
+        
+        .toc-item:hover {
+            background: #e8e8e8;
+        }
+        
+        .toc-item.completed {
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        .word-count {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="notebook-container">
+        <h1>Code-Backed Proof Paper - Interactive Writing Environment</h1>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="table-of-contents">
+            <h3>Paper Sections</h3>
+            <div class="toc-item" onclick="scrollToSection('abstract')">1. Abstract</div>
+            <div class="toc-item" onclick="scrollToSection('introduction')">2. Introduction</div>
+            <div class="toc-item" onclick="scrollToSection('related-work')">3. Related Work</div>
+            <div class="toc-item" onclick="scrollToSection('preliminaries')">4. Preliminaries</div>
+            <div class="toc-item" onclick="scrollToSection('main-results')">5. Main Results</div>
+            <div class="toc-item" onclick="scrollToSection('strategy')">6. Code-Backed Proof Strategy</div>
+            <div class="toc-item" onclick="scrollToSection('proof-sketch')">7. Formal Proof Sketch</div>
+            <div class="toc-item" onclick="scrollToSection('implementation')">8. Implementation Details</div>
+            <div class="toc-item" onclick="scrollToSection('validation')">9. Validation and Testing</div>
+            <div class="toc-item" onclick="scrollToSection('limitations')">10. Limitations</div>
+            <div class="toc-item" onclick="scrollToSection('discussion')">11. Discussion</div>
+            <div class="toc-item" onclick="scrollToSection('conclusion')">12. Conclusion</div>
+        </div>
+
+        <!-- Abstract Section -->
+        <div class="section" id="abstract">
+            <div class="section-header" onclick="toggleSection('abstract')">
+                <div class="section-title">1. Abstract (150-250 words)</div>
+                <div class="section-subtitle">Problem statement, main results, and significance</div>
+            </div>
+            
+            <div class="guidelines">
+                <h4>Writing Guidelines for Abstract:</h4>
+                <ul>
+                    <li>Start with the problem and its significance</li>
+                    <li>State your main result precisely</li>
+                    <li>Explain what makes this "code-backed" and why it matters</li>
+                    <li>Mention key limitations</li>
+                    <li>Keep it concise but complete</li>
+                </ul>
+            </div>
+            
+            <div class="content-area">
+                <textarea class="writing-area" placeholder="Write your abstract here..." onkeyup="updateWordCount('abstract')"></textarea>
+            </div>
+            
+            <div class="code-area">
+                <h4>Code Integration (Optional):</h4>
+                <textarea class="code-editor" placeholder="// Add any JavaScript code to demonstrate concepts or validate claims
+// For example:
+function validateAbstractClaims() {
+    // Code to support your abstract claims
+    return true;
+}">
+                </textarea>
+                <button class="run-button" onclick="runCode('abstract')">Run Code</button>
+                <div class="output-area" id="abstract-output" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Introduction Section -->
+        <div class="section" id="introduction">
+            <div class="section-header" onclick="toggleSection('introduction')">
+                <div class="section-title">2. Introduction and Motivation</div>
+                <div class="section-subtitle">Context, motivation, and paper roadmap</div>
+            </div>
+            
+            <div class="guidelines">
+                <h4>Writing Guidelines for Introduction:</h4>
+                <ul>
+                    <li>Set the mathematical/computational context</li>
+                    <li>Explain why traditional proofs are challenging here</li>
+                    <li>Describe how code helps with transparency</li>
+                    <li>Outline your contributions</li>
+                    <li>Provide a roadmap of the paper</li>
+                </ul>
+            </div>
+            
+            <div class="content-area">
+                <textarea class="writing-area" placeholder="Write your introduction here..." onkeyup="updateWordCount('introduction')"></textarea>
+            </div>
+            
+            <div class="code-area">
+                <h4>Code Integration:</h4>
+                <textarea class="code-editor" placeholder="// Demonstrate the problem or motivating example
+// Show why traditional approaches are insufficient">
+                </textarea>
+                <button class="run-button" onclick="runCode('introduction')">Run Code</button>
+                <div class="output-area" id="introduction-output" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Related Work Section -->
+        <div class="section" id="related-work">
+            <div class="section-header" onclick="toggleSection('related-work')">
+                <div class="section-title">3. Related Work</div>
+                <div class="section-subtitle">Prior work and how this differs</div>
+            </div>
+            
+            <div class="guidelines">
+                <h4>Writing Guidelines for Related Work:</h4>
+                <ul>
+                    <li>Survey classical results in your area</li>
+                    <li>Compare with proof assistants (Coq, Lean, Isabelle)</li>
+                    <li>Contrast with property-based testing approaches</li>
+                    <li>Highlight what makes your approach unique</li>
+                </ul>
+            </div>
+            
+            <div class="content-area">
+                <textarea class="writing-area" placeholder="Write about related work here..." onkeyup="updateWordCount('related-work')"></textarea>
+            </div>
+        </div>
+
+        <!-- Continue with more sections... -->
+        
+        <div class="nav-buttons">
+            <button class="nav-button" onclick="saveProgress()">Save Progress</button>
+            <button class="nav-button" onclick="exportToLatex()">Export to LaTeX</button>
+            <button class="nav-button" onclick="generatePDF()">Generate PDF</button>
+        </div>
+    </div>
+    
+    <div class="word-count" id="wordCount">Words: 0</div>
+
+    <script>
+        let totalWords = 0;
+        let completedSections = new Set();
+        
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+            // Mark section as active
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+        
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const content = section.querySelector('.content-area, .code-area');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+            } else {
+                content.style.display = 'none';
+            }
+        }
+        
+        function updateWordCount(sectionId) {
+            const textarea = document.querySelector(`#${sectionId} .writing-area`);
+            const words = textarea.value.split(/\s+/).filter(word => word.length > 0).length;
+            
+            // Update total word count
+            totalWords = 0;
+            document.querySelectorAll('.writing-area').forEach(area => {
+                const sectionWords = area.value.split(/\s+/).filter(word => word.length > 0).length;
+                totalWords += sectionWords;
+            });
+            
+            document.getElementById('wordCount').textContent = `Words: ${totalWords}`;
+            
+            // Mark section as completed if it has substantial content
+            if (words > 50) {
+                completedSections.add(sectionId);
+                updateProgress();
+            }
+        }
+        
+        function updateProgress() {
+            const totalSections = 12; // Total number of sections
+            const progress = (completedSections.size / totalSections) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Update TOC items
+            document.querySelectorAll('.toc-item').forEach((item, index) => {
+                const sectionIds = ['abstract', 'introduction', 'related-work', 'preliminaries', 
+                                 'main-results', 'strategy', 'proof-sketch', 'implementation', 
+                                 'validation', 'limitations', 'discussion', 'conclusion'];
+                if (completedSections.has(sectionIds[index])) {
+                    item.classList.add('completed');
+                }
+            });
+        }
+        
+        function runCode(sectionId) {
+            const codeArea = document.querySelector(`#${sectionId} .code-editor`);
+            const outputArea = document.getElementById(`${sectionId}-output`);
+            
+            try {
+                // Create a safe execution context
+                const result = eval(codeArea.value);
+                outputArea.style.display = 'block';
+                outputArea.textContent = 'Output: ' + (result !== undefined ? result : 'Code executed successfully');
+            } catch (error) {
+                outputArea.style.display = 'block';
+                outputArea.textContent = 'Error: ' + error.message;
+                outputArea.style.color = 'red';
+            }
+        }
+        
+        function saveProgress() {
+            const paperData = {
+                timestamp: new Date().toISOString(),
+                sections: {},
+                totalWords: totalWords,
+                completedSections: Array.from(completedSections)
+            };
+            
+            document.querySelectorAll('.section').forEach(section => {
+                const id = section.id;
+                const textarea = section.querySelector('.writing-area');
+                const codeArea = section.querySelector('.code-editor');
+                
+                paperData.sections[id] = {
+                    content: textarea ? textarea.value : '',
+                    code: codeArea ? codeArea.value : ''
+                };
+            });
+            
+            localStorage.setItem('paperProgress', JSON.stringify(paperData));
+            alert('Progress saved locally!');
+        }
+        
+        function loadProgress() {
+            const saved = localStorage.getItem('paperProgress');
+            if (saved) {
+                const paperData = JSON.parse(saved);
+                
+                Object.keys(paperData.sections).forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (section) {
+                        const textarea = section.querySelector('.writing-area');
+                        const codeArea = section.querySelector('.code-editor');
+                        
+                        if (textarea && paperData.sections[sectionId].content) {
+                            textarea.value = paperData.sections[sectionId].content;
+                        }
+                        if (codeArea && paperData.sections[sectionId].code) {
+                            codeArea.value = paperData.sections[sectionId].code;
+                        }
+                    }
+                });
+                
+                completedSections = new Set(paperData.completedSections || []);
+                updateProgress();
+                updateWordCount('abstract'); // Trigger word count update
+            }
+        }
+        
+        function exportToLatex() {
+            alert('LaTeX export feature coming soon! For now, copy your content to the LaTeX files in the paper/ directory.');
+        }
+        
+        function generatePDF() {
+            alert('PDF generation feature coming soon! Use the LaTeX build system in the paper/ directory.');
+        }
+        
+        // Load saved progress on page load
+        window.onload = function() {
+            loadProgress();
+        };
+        
+        // Auto-save every 5 minutes
+        setInterval(saveProgress, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
