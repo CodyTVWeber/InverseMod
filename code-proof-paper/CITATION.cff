@@ -1,9 +1,0 @@
-cff-version: 1.2.0
-message: "If you use this project, please cite it as below."
-title: "Code-Backed Mathematical Proof Project"
-authors:
-  - name: "Your Name"
-version: 0.1.0
-date-released: 2025-09-23
-license: MIT
-

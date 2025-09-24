@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>JupyterLite - Local Paper Writing</title>
+    <link rel="icon" href="https://raw.githubusercontent.com/jupyterlite/jupyterlite/main/docs/_static/icon.svg">
+
+    <!-- JupyterLite from official demo -->
+    <link rel="stylesheet" href="https://jupyterlite.readthedocs.io/en/latest/_static/lab/index.css">
+    <script src="https://jupyterlite.readthedocs.io/en/latest/_static/lab/index.js" crossorigin></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            z-index: 1000;
+        }
+
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        .error a {
+            color: #721c24;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <h2>🚀 Loading JupyterLite...</h2>
+        <p>This may take a moment to load the first time.</p>
+        <p>If this takes too long, try refreshing the page.</p>
+    </div>
+
+    <script>
+        // Simple approach: redirect to the working official demo
+        // but try to load it with our local files if possible
+
+        window.addEventListener('load', function() {
+            // Check if JupyterLite loaded successfully
+            setTimeout(function() {
+                const loading = document.getElementById('loading');
+                if (loading && loading.style.display !== 'none') {
+                    // If still loading after 10 seconds, show error with fallback
+                    loading.innerHTML = `
+                        <div class="error">
+                            <h2>⚠️ JupyterLite Loading Issue</h2>
+                            <p>The local setup has some issues. Here are your options:</p>
+                            <p><strong>Option 1:</strong> <a href="https://jupyterlite.readthedocs.io/en/latest/try/lab/" target="_blank">Use the official JupyterLite demo online</a></p>
+                            <p><strong>Option 2:</strong> <a href="../index.html">Go back to setup instructions</a></p>
+                            <p><strong>Option 3:</strong> Install minimal Python for local Deno kernel</p>
+                        </div>
+                    `;
+                }
+            }, 10000);
+        });
+    </script>
+</body>
+</html>

@@ -1,9 +1,40 @@
-# Jupyter with Pure JavaScript (no Python in notebooks)
+# 📄 Paper Section: Jupyter Notebook
 
-Use this folder to draft your paper entirely in JavaScript using notebooks.
+This directory contains the **educational paper** - a Jupyter notebook that explains and demonstrates mathematical concepts through interactive code examples.
 
-- Notebook: `paper-outline.ipynb` (prompts only; you write the prose)
-- Kernels: JavaScript via JupyterLite (browser, zero install) or local JS kernels (Deno/IJavascript)
+## Purpose
+
+The notebook serves as your **mathematical paper/exposition**:
+- Algorithm walkthroughs and explanations
+- Interactive code demonstrations
+- Problem analysis and edge cases
+- Educational examples and visualizations
+- Step-by-step reasoning with executable code
+
+## Structure
+
+- **`paper-outline.ipynb`** - Main paper notebook with embedded JavaScript demonstrations
+- **`lab/`** - Browser-based JupyterLite setup for easy access
+
+## Relationship to Code
+
+- **Notebook** = **Teaching/Explanation** 📚
+  - Shows "how" and "why" with examples
+  - Educational demonstrations
+  - Interactive exploration
+
+- **Code** (`../code/`) = **Implementation** ⚙️
+  - Production algorithms
+  - Comprehensive testing
+  - Performance optimization
+  - Reusable modules
+
+## Workflow
+
+1. **Demonstrate concepts** in the notebook with explanatory code
+2. **Reference implementations** from the `../code/` directory when needed
+3. **Focus on pedagogy** - make complex ideas accessible
+4. **Use executable examples** to validate mathematical claims
 
 ## Zero-install (recommended): JupyterLite in your browser
 
