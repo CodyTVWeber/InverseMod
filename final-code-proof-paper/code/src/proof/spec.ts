@@ -4,7 +4,7 @@ export interface Property<T = unknown> {
 
 export type GeneratorFn<T> = () => T
 
-export interface ProofResult {
+export interface ProofResult<T = unknown> {
   name: string
   passed: boolean
   message?: string

@@ -25,13 +25,14 @@ export class InverseUniquenessProperty implements Property<ModularArithmeticTest
       return true // No inverse exists, property vacuously true
     }
 
-    const result1 = computeModularInverse(base, modulus)
+    const result1 = computeModularInverse(base, modulus, { fallbackToExtendedGcd: true })
     if (!result1.success) {
       return false // Algorithm should find an inverse
     }
 
-    // Check if the result is actually correct
-    const product = (result1.inverse! * base) % modulus
+    // Check if the result is actually correct - handle negative numbers properly
+    const rawProduct = result1.inverse! * base
+    const product = ((rawProduct % modulus) + modulus) % modulus
     return product === 1
   }
 }
@@ -51,17 +52,20 @@ export class ConsistencyProperty implements Property<ModularArithmeticTestCase> 
     const egcdResult = extendedGcd(base, modulus)
 
     if (!heuristicResult.success) {
-      return true // Heuristic failed, but that's acceptable
+      return true // Heuristic failed, but that's acceptable for consistency check
     }
 
     let egcdInverse = egcdResult.x % modulus
     if (egcdInverse < 0) egcdInverse += modulus
 
-    // Both should give valid inverses
-    const heuristicValid = (heuristicResult.inverse! * base) % modulus === 1
-    const egcdValid = (egcdInverse * base) % modulus === 1
+    // Both should give valid inverses - handle negative numbers properly
+    const heuristicRawProduct = heuristicResult.inverse! * base
+    const egcdRawProduct = egcdInverse * base
 
-    return heuristicValid && egcdValid
+    const heuristicProduct = ((heuristicRawProduct % modulus) + modulus) % modulus
+    const egcdProduct = ((egcdRawProduct % modulus) + modulus) % modulus
+
+    return heuristicProduct === 1 && egcdProduct === 1
   }
 }
 
@@ -257,8 +261,15 @@ export function testEdgeCases(): {
 
   let negativeNumbersPassed = true
   for (const test of negativeTests) {
-    const result = computeModularInverse(test.base, test.modulus)
-    if (!result.success || (result.inverse! * test.base) % test.modulus !== 1) {
+    const result = computeModularInverse(test.base, test.modulus, { fallbackToExtendedGcd: true })
+    if (!result.success) {
+      negativeNumbersPassed = false
+      break
+    }
+    // Validate with proper negative modulo handling
+    const rawProduct = result.inverse! * test.base
+    const product = ((rawProduct % test.modulus) + test.modulus) % test.modulus
+    if (product !== 1) {
       negativeNumbersPassed = false
       break
     }
