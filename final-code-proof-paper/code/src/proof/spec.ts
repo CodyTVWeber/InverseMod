@@ -4,10 +4,12 @@ export interface Property<T = unknown> {
 
 export type GeneratorFn<T> = () => T
 
-export interface ProofResult {
+export interface ProofResult<T = unknown> {
   name: string
   passed: boolean
   message?: string
+  trials?: number
+  counterexamples?: T[]
 }
 
 export function verifyProperty<T>(
@@ -17,13 +19,19 @@ export function verifyProperty<T>(
   numTrials = 1000
 ): ProofResult {
   let passed = true
+  const counterexamples: T[] = []
   for (let i = 0; i < Math.max(1, numTrials); i++) {
     const candidate = generator()
     if (!propertyUnderTest.check(candidate)) {
       passed = false
-      break
+      counterexamples.push(candidate)
     }
   }
-  return { name: propertyName, passed }
+  return {
+    name: propertyName,
+    passed,
+    trials: numTrials,
+    counterexamples: counterexamples.length > 0 ? counterexamples : undefined
+  }
 }
 

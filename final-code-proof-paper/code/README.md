@@ -1,14 +1,41 @@
-# Code Implementation
+# Modular Inverse Algorithm Implementation
 
-This directory contains the **production-ready implementation** of the mathematical algorithms and proofs. Unlike the Jupyter notebook which focuses on explanation and demonstration, this is the **actual working code** with proper testing, error handling, and performance optimizations.
+This directory contains the **production-ready implementation** of Cody Weber's modular multiplicative inverse algorithm. The implementation provides robust, well-tested code for finding modular inverses with comprehensive error handling, performance analysis, and mathematical validation.
 
-## Structure
+## Algorithm Overview
 
-- **`src/`** - Source code for algorithms and mathematical implementations
-  - `proof/` - Core proof implementations and mathematical utilities
-- **`tests/`** - Comprehensive test suites using Vitest
-- **`package.json`** - Node.js dependencies and scripts
-- **`tsconfig.json`** - TypeScript configuration
+The algorithm finds the modular multiplicative inverse z such that (z * x) mod y = 1, where x and y are coprime positive integers. Key features include:
+
+- **Heuristic Search**: Iterative k-multiplier approach with bounded backtracking
+- **GCD Validation**: Pre-checks ensure inverse existence before computation
+- **Fallback Mechanism**: Extended Euclidean algorithm fallback for edge cases
+- **Performance Analysis**: Complexity analysis and benchmarking utilities
+- **Property Testing**: Mathematical property validation framework
+
+## Implementation Details
+
+### Core Components
+
+- **`src/modular-inverse.ts`** - Main algorithm implementation with:
+  - `computeModularInverse()` - Primary API function
+  - `findInverseWithHeuristic()` - Heuristic search with backtracking
+  - `analyzePerformance()` - Performance and complexity analysis
+  - `analyzeComplexity()` - Detailed complexity pattern analysis
+
+- **`src/proof/spec.ts`** - Property-based testing framework
+- **`src/proof/properties.ts`** - Mathematical property definitions and generators
+
+### Test Coverage
+
+- **`tests/test-modular-inverse.test.ts`** - Core algorithm tests
+- **`tests/test-properties.test.ts`** - Property-based testing validation
+
+### Key Features
+
+- **Robust Error Handling**: Comprehensive input validation and error reporting
+- **Multiple Methods**: Heuristic search with extended GCD fallback
+- **Performance Monitoring**: Execution time tracking and complexity analysis
+- **Edge Case Handling**: Special cases like x=1, negative numbers, large moduli
 
 ## Development
 
