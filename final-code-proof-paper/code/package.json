@@ -1,24 +1,45 @@
 {
-  "name": "code-proof-paper",
-  "version": "0.2.0",
-  "private": true,
-  "type": "module",
+  "name": "inversemod-algorithm",
+  "version": "1.0.0",
+  "description": "Novel forward-iterative algorithm for computing modular multiplicative inverses with JavaScript implementations",
+  "main": "src/index.js",
   "scripts": {
-    "build:paper": "bash scripts/build_paper.sh",
-    "test": "vitest run --reporter=dot",
-    "test:watch": "vitest",
-    "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist coverage || true && make -C paper clean || true",
-    "examples": "tsx src/examples.ts",
-    "dev": "tsx watch src/examples.ts"
+    "test": "node src/test-framework.js --comprehensive",
+    "test:quick": "node src/test-framework.js --quick",
+    "test:scenarios": "node src/test-framework.js --scenarios",
+    "test:stress": "node src/test-framework.js --stress 1000 10000",
+    "demo": "node src/demo.js",
+    "analysis": "node src/mathematical-analysis.js",
+    "alternatives": "node src/alternative-approaches.js",
+    "lint": "echo 'Linting not configured yet'",
+    "build": "echo 'Build process not needed for this project'"
   },
-  "devDependencies": {
-    "@jupyterlite/application": "^0.6.4",
-    "@jupyterlite/pyolite-kernel": "^0.1.0-beta.18",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.6.3",
-    "vitest": "^2.1.3",
-    "tsx": "^4.7.0",
-    "@types/node": "^20.14.10"
-  }
+  "keywords": [
+    "modular-arithmetic",
+    "multiplicative-inverse",
+    "number-theory",
+    "algorithm",
+    "javascript",
+    "mathematical-paper"
+  ],
+  "author": "Cody Weber",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/inversemod-algorithm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/inversemod-algorithm/issues"
+  },
+  "homepage": "https://github.com/username/inversemod-algorithm#readme",
+  "dependencies": {},
+  "devDependencies": {},
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ]
 }
