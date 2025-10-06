@@ -109,8 +109,7 @@ function inverseModFull(x, y) {
         return { result, z: 0 };
     }
 
-    // Calculate initial k value
-    // Use ceil(y/currentX) to ensure (currentX * k) > y and avoid r = 0 when currentX | y
+    // Calculate initial k value: minimal k ensuring product > y
     let k1 = Math.floor(y / currentX) + 1;
     k.push(k1);
     
@@ -124,12 +123,8 @@ function inverseModFull(x, y) {
         // FIXED: Better k calculation with bounds checking
         let prevR = r[n - 1];
         
-        // Calculate k value
-        if (y % prevR === 0) {
-            k.push(Math.floor(y / prevR));
-        } else {
-            k.push(Math.floor(y / prevR) + 1);
-        }
+        // Calculate k value: minimal multiplier to ensure product > y
+        k.push(Math.floor(y / prevR) + 1);
 
         let newR = (prevR * k[n]) % y;
         r.push(newR);
