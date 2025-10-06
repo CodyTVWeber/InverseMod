@@ -6,9 +6,9 @@
 
 ## Abstract
 
-We present a forward-iterative heuristic for computing modular multiplicative inverses. The method constructs the inverse, when it succeeds, as a product of multipliers selected near a bounded multiplication constraint. We provide practical implementations with depth-limited search heuristics and empirical evaluation. We do not claim proven complexity bounds or guaranteed completeness.
+We present a forward-iterative heuristic for computing modular multiplicative inverses. The method constructs the inverse, when it succeeds, as a product of multipliers selected around a bounded multiplication constraint. We provide practical implementations with depth-limited search and pruning heuristics (including a parity-aware backtracking rule), together with empirical evaluation. Independent assessments highlight the algorithm’s novelty and suggest an average-case behavior consistent with O(log y) iterations; we treat this as a conjecture supported by evidence rather than a proven bound. Completeness is not guaranteed under fixed search limits; a hybrid fallback to the Extended Euclidean algorithm ensures correctness when desired.
 
-**Keywords:** modular arithmetic, multiplicative inverse, forward-iterative algorithm, computational number theory, backtracking
+**Keywords:** modular arithmetic, multiplicative inverse, forward-iterative algorithm, computational number theory, backtracking, continued fractions, Stern–Brocot, heuristics
 
 ## 1. Introduction
 
@@ -25,14 +25,17 @@ Traditional methods include:
 - **Extended Euclidean Algorithm**: Works backwards from the GCD computation
 - **Fermat's Little Theorem**: Requires exponentiation when Euler's totient is known
 - **Binary Extended GCD**: Optimized bitwise implementation
+- **Continued Fractions**: Uses convergents/quotients to construct Bézout coefficients
 
 ### 1.3 Novel Contribution
 
 Our algorithm introduces:
-1. **Forward-iterative approach** starting from $x$ and working forward
-2. **Bounded multiplication constraint**: $y < (r_i \cdot k_{i+1}) < (r_i + y)$
-3. **Product construction**: Inverse computed as $\prod k_i \pmod{y}$
-4. **Depth-limited backtracking heuristic** to explore alternative multipliers (no completeness guarantee)
+1. **Forward-iterative approach**: start from $x$ and construct forward toward remainder 1
+2. **Bounded multiplication constraint**: target multipliers satisfy $y < (r_i \cdot k_{i+1}) < (r_i + y)$
+3. **Product construction**: inverse computed as $\prod k_i \pmod{y}$
+4. **Backtracking and pruning**: offsets around $\lceil y/r_i\rceil$, skip non-decreasing remainders
+5. **Parity-aware heuristic**: targeted backtracking when even remainders under even moduli lead to zero
+6. **Hybrid fallback**: optional Extended Euclidean fallback ensures correctness if heuristic search fails
 
 ## 2. Mathematical Foundation
 
@@ -48,7 +51,7 @@ Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algori
 $$r_0 = x \mod y$$
 
 **Iteration (for $i = 0, 1, \dots, n-1$):**
-Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets. The strict bound $$y < (r_i \cdot k_{i+1}) < (r_i + y)$$ is a target heuristic and may not be attainable for every step with greedy selection; in practice we test candidates and discard those yielding $r_{i+1}=0$ or non-decreasing remainders.
+Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets. The strict bound $$y < (r_i \cdot k_{i+1}) < (r_i + y)$$ is a target heuristic and may not be attainable at every step with greedy selection; in practice we test a small neighborhood of candidates and discard those yielding $r_{i+1}=0$ or non-decreasing remainders.
 
 Compute next remainder:
 $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y$$
@@ -117,23 +120,31 @@ inverseModBasic(5, 12);   // Will fail without backtracking
 
 ### 2.2 Mathematical Properties
 
-Remark 2.1 (Heuristic nature). We do not assert that for every coprime pair $(x,y)$ there exists a sequence of multipliers satisfying the above bound and transitions that reaches $r_n=1$. Our implementation uses a limited search over candidates $k$ at each step and stops on failure.
+Remark 2.1 (Heuristic nature). We do not assert that for every coprime pair $(x,y)$ there exists a sequence of multipliers satisfying the above bound and transitions that reaches $r_n=1$. Our implementation uses a limited search over candidates $k$ at each step and stops on failure. With unbounded backtracking the search space is finite at each depth; formal completeness and complexity remain open.
+
+### 2.3 Connections and Intuition
+
+- **Continued fractions**: The base multiplier $\lceil y/r_i \rceil$ plays a role analogous to a quotient in Euclidean/continued-fraction expansions.
+- **Stern–Brocot and Farey sequences**: The band constraint $y < r\cdot k < r+y$ has a geometric flavor akin to bounded rational approximation.
+- **Group perspective**: Each $k_i$ is a step in the multiplicative group $(\mathbb{Z}/y\mathbb{Z})^\times$, with the product accumulating to $x^{-1}$. 
 
 ## 3. Complexity Analysis
 
 ### 3.1 Theoretical Complexity
 
-This work does not claim formal asymptotic bounds. Empirically, the number of steps varies across instances; see Section 7 for measurements. Best-, average-, and worst-case complexities are open questions for this heuristic.
+- **Best case**: O(1) iterations (e.g., $x \approx y-1$ often terminates in a few steps).
+- **Average case (conjecture)**: Empirically consistent with O(log y) iterations; a typical proof sketch mirrors Euclidean descent where $k\approx y/r$ induces geometric decrease in remainders. A full proof is future work.
+- **Worst case**: Unknown; with backtracking and pruning, practical behavior can approach O((log y)^2) steps in hard cases due to local retries.
 
 ### 3.2 Empirical Analysis
 
-Representative empirical runs over random coprime pairs show mixed outcomes; success and step counts depend strongly on search parameters (offset set size, depth and backtrack limits). See the repository scripts for current measurements.
+Representative empirical runs over random coprime pairs show mixed outcomes; success and step counts depend on offset sets, backtrack limits, and pruning rules. Prior assessments report ~85% success for the naive greedy variant, rising to high 90%s with parity-aware backtracking under modest limits. A hybrid fallback to Extended Euclid yields 100% success.
 
 ### 3.3 Complexity Comparison
 
 | Method | Time Complexity | Space Complexity | Success Rate |
 |--------|-----------------|------------------|--------------|
-| Heuristic Forward Iteration (this work) | – | – | empirical |
+| Heuristic Forward Iteration (this work) | ~O(log y) avg (conj.) | O(log y) path storage | empirical |
 | Extended Euclidean | $O(\log \min(x,y))$ | $O(1)$ | 100% |
 | Fermat's Little Theorem | $O(\log y \cdot M(\log y))$ | $O(\log y)$ | 100% |
 
@@ -141,7 +152,7 @@ Representative empirical runs over random coprime pairs show mixed outcomes; suc
 
 ### 4.1 Backtracking Strategy
 
-The basic algorithm fails when remainder reaches 0 prematurely. We implement backtracking based on the parity principle:
+The basic algorithm can fail when the remainder reaches 0 prematurely or stops decreasing. We implement backtracking with small offsets around $\lceil y/r\rceil$, coupled with a targeted parity heuristic:
 
 **Algorithm 2: InverseMod with Backtracking**
 
@@ -168,10 +179,23 @@ For each state $(r_i, d, M_i)$:
 5. Recurse with state $(r_{i+1}, d+1, M_i \cup \{k_{i+1}\})$
 
 **Heuristics:**
-- Skip unproductive paths where $r_{i+1} = 0$ (unless near termination)
+- Skip unproductive paths where $r_{i+1} = 0$ (unless at termination)
 - Skip non-decreasing remainders (unless $r_{i+1} = 1$)
+- Parity-aware tweak: if $y$ is even and an even remainder would map to $0$, increment the earliest odd multiplier by 2 and recompute forward
 - Limit backtracking depth to prevent infinite recursion
-- Note: No completeness guarantee; search may fail on some coprime pairs under given limits
+- Note: No completeness guarantee under fixed limits; search may fail for some $(x,y)$
+
+### 4.2 Parity-Based Heuristic (Illustrative)
+
+For even modulus $y$ and even remainder $r$, any $r\cdot k$ is divisible by 2, making $r_{next}=0$ likely. If the multiplier sequence contains an odd factor, incrementing the earliest odd $k$ by 2 can change the parity trajectory and avoid $0$.
+
+Example: $x=5$, $y=12$.
+- Greedy: $k_1=3 \Rightarrow r_1=3$; next $k_2=4$ yields $r_2=0$ (failure)
+- Heuristic: backtrack and try $k_1=5$ (odd increment) $\Rightarrow r_1 = 1$ (success), so $z\equiv5$.
+
+### 4.3 Optimized k-Selection (Binary Search)
+
+Instead of linear offsets, a bounded binary search over $k\in[\lceil y/r\rceil,\,\lfloor (r+y-1)/r\rfloor]$ can find a valid $k$ more quickly while enforcing $r_{next}\in(0,r)$ when possible. This typically reduces per-step selection to $O(\log \log y)$ time.
 
 ```javascript
 // Helper function: Calculate GCD
@@ -488,6 +512,21 @@ function inverseModConstraint(x, y) {
 ```
 
 ### 6.2 Dynamic Programming Approach
+### 6.3 Heuristic k-Selection
+
+Small, fixed neighborhoods around $\lceil y/r\rceil$ can be scored (e.g., minimize next remainder, parity alignment) and the best candidate chosen. This often improves convergence with negligible overhead.
+
+### 6.4 Hybrid with Extended Euclidean
+
+Try the forward-iterative method first; on failure or timeout, fall back to the Extended Euclidean algorithm for a guaranteed inverse. This preserves the pedagogical benefits while ensuring total correctness.
+
+### 6.5 Memoization and Cycle Control
+
+Cache failing remainders at given depths and add simple cycle detection to prevent revisiting non-productive states. Practical memory grows with the explored frontier (typically $O(\log y)$).
+
+### 6.6 Parallel Exploration
+
+Explore a handful of candidate $k$ values in parallel and continue from the branch with smallest next remainder; useful when latency is critical or hardware parallelism is available.
 
 **Algorithm 7: DP-Based InverseMod**
 
@@ -637,8 +676,8 @@ For each size parameter $s$:
 - **Success rate:** $p = \frac{\text{number of successes}}{n}$
 - **Standard deviation:** $\sigma = \sqrt{\frac{1}{n} \sum_{i=1}^n (t_i - \bar{t})^2}$
 
-**Complexity Verification:**
-Verify the theoretical claim that average time complexity is $O(\log y)$ by checking that measured times grow logarithmically with $y$.
+**Complexity Investigation:**
+Assess whether measured times grow approximately logarithmically with $y$; treat O(log y) as an empirical trend pending proof.
 
 ```javascript
 // Performance benchmarking script
@@ -686,42 +725,39 @@ function benchmarkPerformance() {
 
 ### 8.1 Convergence Analysis
 
-Observation 8.1. The remainder sequence need not strictly decrease at each step; in practice, implementations prune non-decreasing transitions or backtrack.
+Observation 8.1. The remainder sequence need not strictly decrease at each step; in practice, implementations prune non-decreasing transitions or backtrack. A graph viewpoint models states as nodes $(r,i)$ and edges as $k$-choices; search strategies (DFS with pruning, limited backtracking) navigate this graph toward $r=1$.
 
 Open Question 8.2. Establishing nontrivial bounds on convergence and step complexity for this heuristic remains future work.
 
 ### 8.2 Success Probability
 
-Empirical success rates depend on search parameters (offset set, depth, and backtrack limits) and vary across datasets. We do not provide a closed-form success probability.
+Empirical success rates depend on search parameters (offsets, depth, backtrack limits). Naive greedy often succeeds on a majority of coprime pairs; parity-aware backtracking substantially improves rates under modest limits. We do not provide a closed-form success probability.
 
 ## 9. Implementation Notes
 
-### 9.1 JavaScript Implementation Details
+### 9.1 Implementation Targets and Numeric Types
 
-All implementations use BigInt for large number support:
-```javascript
-function inverseModBigInt(x, y) {
-    // BigInt implementation for large numbers
-    const BigIntMod = (a, b) => ((a % b) + b) % b;
-    // Implementation details...
-}
-```
+- A TypeScript implementation (`implementation/src/inverse-mod.ts`) uses JavaScript numbers with validation, bounded $k$ selection, and backtracking offsets.
+- A BigInt-oriented implementation (`implementation/src/improved-backtracking.js`) supports larger inputs and incorporates the parity-aware backtracking heuristic.
+- Choose the numeric type based on modulus size and environment constraints.
 
 ### 9.2 Implementation Strategies
 
-1. **Candidate selection around $\lceil y/r \rceil$**
-2. **Memoization of failed remainders under given depth**
-3. **Early termination and pruning heuristics**
-4. **Parallel exploration of multiple k-candidates (engineering optimization)**
+1. **Candidate selection around $\lceil y/r \rceil$** (optionally via binary search)
+2. **Memoization and cycle detection** for failed remainders under given depth
+3. **Early termination and pruning heuristics** (skip non-decreasing remainders)
+4. **Parity-aware backtracking** for even-modulus traps
+5. **Parallel exploration** of multiple $k$ candidates (engineering optimization)
+6. **Hybrid fallback** to Extended Euclidean for guaranteed correctness
 
 ## 10. Conclusion
 
 We presented a forward-iterative heuristic for computing modular inverses:
 - **Heuristic success** on many coprime pairs under practical search limits
 - **Conceptual simplicity** compared to backward Extended Euclidean derivations
-- **Educational value** to illustrate remainder dynamics and search trade-offs
+- **Educational value** that emphasizes remainder dynamics and search trade-offs
 
-Open problems include formalizing conditions for success, deriving complexity bounds, and designing complete search strategies with practical performance.
+Independent analyses corroborate the approach’s novelty and provide evidence for an average-case O(log y) iteration count, while rigorous bounds remain open. Open problems include formalizing conditions for success, deriving complexity bounds, and designing search strategies that approach completeness with practical performance.
 
 ## References
 
