@@ -88,21 +88,15 @@ function inverseModFixed(x, y) {
     // Normalize x mod y
     x = x % y;
 
-    // Calculate first k value with proper bounds checking
-    let k1 = Math.ceil(y / x);
-    while (k1 * x <= y || k1 * x >= x + y) {
-        k1++;
-    }
+    // Calculate first k value: minimal k ensuring product > y
+    let k1 = Math.floor(y / x) + 1;
     k.push(k1);
     r.push((x * k[0]) % y);
 
     let n = 1;
     while (r[n - 1] > 1 && n < 1000) { // Safety limit
-        // Calculate next k value with proper bounds checking
-        let nextK = Math.ceil(y / r[n - 1]);
-        while (nextK * r[n - 1] <= y || nextK * r[n - 1] >= r[n - 1] + y) {
-            nextK++;
-        }
+        // Calculate next k value: minimal multiplier to ensure product > y
+        let nextK = Math.floor(y / r[n - 1]) + 1;
         k.push(nextK);
         r.push((r[n - 1] * k[n]) % y);
         n++;

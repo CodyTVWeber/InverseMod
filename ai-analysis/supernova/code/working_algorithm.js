@@ -25,10 +25,8 @@ function inverseModWorking(x, y) {
     const maxAttempts = 10000;
 
     // First step
-    let k1 = Math.ceil(y / currentX);
-    while (k1 * currentX <= y || k1 * currentX >= currentX + y) {
-        k1++;
-    }
+    // Choose smallest k1 that ensures product > y; avoid strict upper bound to prevent deadlocks
+    let k1 = Math.floor(y / currentX) + 1;
     k.push(k1);
     r.push((currentX * k[0]) % y);
 
@@ -54,10 +52,8 @@ function inverseModWorking(x, y) {
         }
 
         // Normal step
-        let nextK = Math.ceil(y / r[r.length - 1]);
-        while (nextK * r[r.length - 1] <= y || nextK * r[r.length - 1] >= r[r.length - 1] + y) {
-            nextK++;
-        }
+        // Pick minimal multiplier to ensure product > y; do not enforce strict < r+y
+        let nextK = Math.floor(y / r[r.length - 1]) + 1;
 
         k.push(nextK);
         r.push((r[r.length - 1] * nextK) % y);

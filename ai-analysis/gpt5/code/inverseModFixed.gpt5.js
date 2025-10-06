@@ -109,8 +109,7 @@ function inverseModFull(x, y) {
         return { result, z: 0 };
     }
 
-    // Calculate initial k value
-    // Use ceil(y/currentX) to ensure (currentX * k) > y and avoid r = 0 when currentX | y
+    // Calculate initial k value: minimal k ensuring product > y
     let k1 = Math.floor(y / currentX) + 1;
     k.push(k1);
     
@@ -118,18 +117,14 @@ function inverseModFull(x, y) {
     result += `Step 1: ${y} < (${currentX} * ${k[0]}) < (${y} + ${currentX}), ((${currentX} * ${k[0]}) % ${y}) = ${r[0]}\n`;
 
     let n = 1;
-    const maxIterations = 100; // Prevent infinite loops
+    const maxIterations = 1000; // Prevent infinite loops and deadlocks
     
     while (r[n - 1] > 1 && n < maxIterations) {
         // FIXED: Better k calculation with bounds checking
         let prevR = r[n - 1];
         
-        // Calculate k value
-        if (y % prevR === 0) {
-            k.push(Math.floor(y / prevR));
-        } else {
-            k.push(Math.floor(y / prevR) + 1);
-        }
+        // Calculate k value: minimal multiplier to ensure product > y
+        k.push(Math.floor(y / prevR) + 1);
 
         let newR = (prevR * k[n]) % y;
         r.push(newR);

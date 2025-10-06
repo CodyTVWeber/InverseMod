@@ -7,8 +7,8 @@
  * through empirical testing and statistical analysis.
  */
 
-const { inverseMod, inverseModFull } = require('../../original/js/inverseMod.js');
-const { inverseMod: inverseModFixed, inverseModFull: inverseModFullFixed } = require('../../original/js/inverseModFixed.js');
+// Note: Original project paths no longer exist in this repo layout.
+// The analysis below is self-contained and does not require these modules.
 
 // Performance measurement utilities
 class PerformanceAnalyzer {
