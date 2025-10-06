@@ -1,0 +1,31 @@
+{
+  "name": "inversemod-paper",
+  "version": "1.0.0",
+  "description": "A Novel Forward-Iterative Algorithm for Computing Modular Multiplicative Inverses - Research Paper and Implementation",
+  "main": "scripts/inverse-mod.js",
+  "scripts": {
+    "test": "npm run test:all",
+    "test:all": "npm run test:happy && npm run test:no-inverse && npm run test:early-zero",
+    "test:happy": "node scripts/test-happy-path.js",
+    "test:no-inverse": "node scripts/test-no-inverse.js",
+    "test:early-zero": "node scripts/test-early-zero.js",
+    "demo": "node -e \"const {inverseMod, printResult} = require('./scripts/inverse-mod.js'); printResult(inverseMod(5, 12));\""
+  },
+  "keywords": [
+    "modular-inverse",
+    "number-theory",
+    "algorithm",
+    "cryptography",
+    "mathematics",
+    "research-paper"
+  ],
+  "author": "Cody Weber",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codyweber/inversemod"
+  }
+}
