@@ -115,7 +115,7 @@ function edgeCasesScenario() {
         { x: 2, y: 5, expected: 3, description: "2 * 3 = 6 ≡ 1 mod 5" },
         { x: 3, y: 5, expected: 2, description: "3 * 2 = 6 ≡ 1 mod 5" },
         { x: 4, y: 7, expected: 2, description: "4 * 2 = 8 ≡ 1 mod 7" },
-        { x: y - 1, y: 11, expected: y - 1, description: "x = y-1 often works in 1-2 steps" }
+        { x: 10, y: 11, expected: 10, description: "x = y-1 often works in 1-2 steps" }
     ];
 
     const backtracker = new ImprovedBacktracker({ debug: false });
