@@ -10,7 +10,12 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rimraf dist coverage || true && make -C paper clean || true",
     "examples": "tsx src/examples.ts",
-    "dev": "tsx watch src/examples.ts"
+    "dev": "tsx watch src/examples.ts",
+    "js:happy": "node ./js/scenarios/happyPath.js",
+    "js:no-inverse": "node ./js/scenarios/noInverse.js",
+    "js:early-zero": "node ./js/scenarios/earlyZero.js",
+    "js:cli": "node ./js/scenarios/cli.js",
+    "js:compare": "node ./js/scenarios/compare.js"
   },
   "devDependencies": {
     "@jupyterlite/application": "^0.6.4",
