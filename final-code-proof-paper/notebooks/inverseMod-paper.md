@@ -40,6 +40,27 @@ Our algorithm introduces:
 
 **Algorithm 1: Basic InverseMod**
 
+**Mathematical Description:**
+
+Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algorithm constructs a sequence of remainders $r_0, r_1, \dots, r_n$ and multipliers $k_1, k_2, \dots, k_n$ such that:
+
+**Initialization:**
+$$r_0 = x \mod y$$
+
+**Iteration (for $i = 0, 1, \dots, n-1$):**
+Choose $k_{i+1} \in \mathbb{N}$ such that:
+$$y < (r_i \cdot k_{i+1}) < (r_i + y)$$
+
+Compute next remainder:
+$$r_{i+1} = (r_i \cdot k_{i+1}) \mod y$$
+
+**Termination:**
+The algorithm terminates when $r_n = 1$.
+
+**Inverse Computation:**
+The modular inverse $z$ satisfies $z \cdot x \equiv 1 \pmod{y}$, and is computed as:
+$$z = \prod_{i=1}^n k_i \pmod{y}$$
+
 ```javascript
 // Basic InverseMod algorithm implementation
 function inverseModBasic(x, y) {
@@ -140,6 +161,33 @@ The basic algorithm fails when remainder reaches 0 prematurely. We implement bac
 
 **Algorithm 2: InverseMod with Backtracking**
 
+**Mathematical Description:**
+
+The enhanced algorithm uses depth-first search with backtracking to explore different multiplier choices when the basic algorithm fails. For a given state $(r_i, d)$ where $d$ is the current depth:
+
+**State Definition:**
+- $r_i$: Current remainder at depth $i$
+- $d$: Current search depth
+- $M_i$: Set of multipliers chosen up to depth $i$
+
+**Base Cases:**
+- If $r_i = 1$, return success with multipliers $M_i$
+- If $r_i = 0$ and $d < \maxDepth - 1$, backtrack (invalid path)
+- If $d > \maxDepth$, return failure
+
+**Search Strategy:**
+For each state $(r_i, d, M_i)$:
+1. Compute base multiplier: $k_{\text{base}} = \lceil y / r_i \rceil$
+2. Try offset values $o \in \{0, 1, 2, 3\}$
+3. Compute candidate multiplier: $k_{i+1} = k_{\text{base}} + o$
+4. Compute next remainder: $r_{i+1} = (r_i \cdot k_{i+1}) \mod y$
+5. Recurse with state $(r_{i+1}, d+1, M_i \cup \{k_{i+1}\})$
+
+**Heuristics:**
+- Skip unproductive paths where $r_{i+1} = 0$ (unless near termination)
+- Skip non-decreasing remainders (unless $r_{i+1} = 1$)
+- Limit backtracking depth to prevent infinite recursion
+
 ```javascript
 // Helper function: Calculate GCD
 function gcd(a, b) {
@@ -237,6 +285,25 @@ function inverseMod(x, y, options = {}) {
 
 **Algorithm 3: Happy Path Implementation**
 
+**Mathematical Description:**
+
+This scenario tests cases where the basic InverseMod algorithm succeeds without requiring backtracking. For each test case $(x, y, z_{\text{expected}})$:
+
+**Verification Process:**
+1. Compute $z = \text{InverseMod}(x, y)$
+2. Verify the result: $z \cdot x \equiv 1 \pmod{y}$
+3. Check against expected value: $z = z_{\text{expected}}$
+
+**Test Cases Structure:**
+Each test case consists of:
+- $x$: The number for which we want the modular inverse
+- $y$: The modulus (must be coprime with $x$)
+- $z_{\text{expected}}$: The expected inverse value
+
+**Mathematical Verification:**
+For each successful computation, verify:
+$$(z \cdot x) \mod y = 1$$
+
 ```javascript
 // Happy path scenario - direct solution without backtracking
 function happyPathScenario() {
@@ -267,6 +334,30 @@ function happyPathScenario() {
 
 **Algorithm 4: No Inverse Detection**
 
+**Mathematical Description:**
+
+This scenario tests cases where no modular inverse exists due to $\gcd(x, y) > 1$. For each test case $(x, y, d_{\text{expected}})$:
+
+**Mathematical Foundation:**
+A modular inverse exists if and only if $\gcd(x, y) = 1$. By definition:
+- If $\gcd(x, y) = d > 1$, then $d$ divides both $x$ and $y$
+- Therefore, any $z$ satisfying $z \cdot x \equiv 1 \pmod{y}$ would require $d$ to divide 1, which is impossible
+
+**Detection Process:**
+1. Compute $d = \gcd(x, y)$
+2. If $d = 1$, an inverse exists (in theory)
+3. If $d > 1$, no inverse exists
+
+**Test Cases Structure:**
+Each test case consists of:
+- $x$: The number for which we want the modular inverse
+- $y$: The modulus (not coprime with $x$)
+- $d_{\text{expected}}$: The expected GCD value
+
+**Mathematical Verification:**
+For each test case, verify:
+$$\gcd(x, y) = d_{\text{expected}} > 1 \implies$$ no inverse exists
+
 ```javascript
 // No inverse scenario - gcd(x, y) > 1
 function noInverseScenario() {
@@ -296,6 +387,32 @@ function noInverseScenario() {
 ### 5.3 Early Zero Scenario
 
 **Algorithm 5: Early Termination Detection**
+
+**Mathematical Description:**
+
+This scenario tests cases where the basic InverseMod algorithm fails due to early termination (reaching remainder 0 before finding the inverse), but the enhanced algorithm with backtracking succeeds. For each test case $(x, y, z_{\text{expected}})$:
+
+**Problem Analysis:**
+The basic algorithm may fail when:
+- The remainder sequence reaches 0 before reaching 1
+- This happens when intermediate computations result in remainders that don't lead to the target
+
+**Enhanced Solution Process:**
+1. Apply basic algorithm and observe failure point
+2. Apply enhanced algorithm with backtracking:
+   - Explore alternative multiplier choices
+   - Use depth-first search to find valid path
+   - Limit search depth to prevent infinite recursion
+
+**Test Cases Structure:**
+Each test case consists of:
+- $x$: The number for which we want the modular inverse
+- $y$: The modulus (coprime with $x$)
+- $z_{\text{expected}}$: The expected inverse value
+
+**Mathematical Verification:**
+For each successful enhanced computation, verify:
+$$(z \cdot x) \mod y = 1$$
 
 ```javascript
 // Early zero scenario - algorithm reaches remainder 0
@@ -335,6 +452,38 @@ function earlyZeroScenario() {
 
 **Algorithm 6: Constraint-Based InverseMod**
 
+**Mathematical Description:**
+
+This approach models the inverse computation problem as a constraint satisfaction problem (CSP). The goal is to find values $k_1, k_2, \dots, k_n$ that satisfy the mathematical constraints of the algorithm.
+
+**Constraint Model:**
+**Variables:**
+- $k_i \in \mathbb{N}$ for $i = 1, 2, \dots, n$ (multipliers)
+- $r_0, r_1, \dots, r_n \in \mathbb{Z}$ (remainders)
+
+**Domains:**
+- $k_i$: Natural numbers (typically small values)
+- $r_i$: $\{0, 1, \dots, y-1\}$
+
+**Constraints:**
+1. **Remainder constraints:**
+   $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y \quad \forall i = 0, 1, \dots, n-1$$
+
+2. **Bound constraints:**
+   $$y < (r_i \cdot k_{i+1}) < (r_i + y) \quad \forall i = 0, 1, \dots, n-1$$
+
+3. **Termination constraint:**
+   $$r_n = 1$$
+
+4. **Coprimality constraint:**
+   $$\gcd(r_0, y) = 1$$
+
+**Solution Process:**
+1. Model the problem as a CSP with the above variables and constraints
+2. Use constraint propagation to reduce domains
+3. Apply search algorithms (backtracking, forward checking, etc.) to find solutions
+4. Extract the multiplier sequence from the solution
+
 ```javascript
 // Constraint programming approach for inverse computation
 function inverseModConstraint(x, y) {
@@ -357,6 +506,33 @@ function inverseModConstraint(x, y) {
 
 **Algorithm 7: DP-Based InverseMod**
 
+**Mathematical Description:**
+
+This approach uses dynamic programming to solve the inverse computation problem by breaking it down into overlapping subproblems. The key insight is that the solution for a remainder $r$ can be constructed from solutions for smaller remainders.
+
+**Problem Formulation:**
+We want to find a sequence of multipliers $k_1, k_2, \dots, k_n$ such that starting from $r_0 = x \mod y$, we reach $r_n = 1$ following the transition rules.
+
+**State Definition:**
+Let $dp[r][d]$ represent whether we can reach remainder 1 starting from remainder $r$ in exactly $d$ steps.
+
+**Recurrence Relation:**
+For each possible remainder $r$ and depth $d$:
+$$dp[r][d] = \bigvee_{k} \left( (r \cdot k) \mod y = r' \land dp[r'][d-1] \right)$$
+where $k$ satisfies the bound constraint:
+$$y < (r \cdot k) < (r + y)$$
+
+**Base Cases:**
+- $dp[1][0] = \text{true}$ (already at target)
+- $dp[r][0] = \text{false}$ for $r \neq 1$ (can't reach in 0 steps)
+
+**Solution Reconstruction:**
+Once we find a valid depth $d$ where $dp[x \mod y][d] = \text{true}$, we can reconstruct the multiplier sequence by backtracking through the DP table.
+
+**Complexity:**
+- Time: $O(y \cdot \log y \cdot d_{\max})$ where $d_{\max}$ is maximum depth
+- Space: $O(y \cdot d_{\max})$ for the DP table
+
 ```javascript
 // Dynamic programming approach for inverse computation
 function inverseModDP(x, y) {
@@ -378,6 +554,43 @@ function inverseModDP(x, y) {
 ### 7.1 Test Suite
 
 **Algorithm 8: Comprehensive Test Framework**
+
+**Mathematical Description:**
+
+This comprehensive testing framework validates the InverseMod algorithm across multiple categories of test cases. Each category tests different aspects of the mathematical correctness and edge cases.
+
+**Test Categories:**
+
+1. **Happy Path Tests:**
+   - Cases where the basic algorithm succeeds
+   - Test the core functionality with known working examples
+   - Verify: $z \cdot x \equiv 1 \pmod{y}$ for computed inverse $z$
+
+2. **No Inverse Tests:**
+   - Cases where $\gcd(x, y) > 1$
+   - Verify the algorithm correctly detects non-existence
+   - Mathematical foundation: No inverse exists when $\gcd(x, y) > 1$
+
+3. **Early Zero Tests:**
+   - Cases where basic algorithm fails but enhanced version succeeds
+   - Test backtracking capability
+   - Verify enhanced algorithm finds valid inverse
+
+4. **Edge Cases:**
+   - Boundary conditions: $x = 1$, small primes, etc.
+   - Test algorithm robustness
+
+5. **Large Numbers:**
+   - Performance and correctness with larger moduli
+   - Verify scalability of the approach
+
+**Test Case Structure:**
+Each test case is a triple $(x, y, \text{expected})$ where:
+- $x, y \in \mathbb{Z}^+$ are the inputs
+- $\text{expected}$ is the expected result or behavior
+
+**Verification Process:**
+For each test case, verify the mathematical correctness of the algorithm's output against the expected mathematical result.
 
 ```javascript
 // Comprehensive testing framework
@@ -406,6 +619,41 @@ function runComprehensiveTests() {
 ### 7.2 Performance Analysis
 
 **Algorithm 9: Performance Benchmarking**
+
+**Mathematical Description:**
+
+This benchmarking framework empirically validates the theoretical complexity claims of the InverseMod algorithm by measuring performance across different problem sizes and computing statistical metrics.
+
+**Performance Metrics:**
+
+1. **Execution Time Analysis:**
+   - Measure wall-clock time for individual computations
+   - Compute average time across multiple runs
+   - Analyze timing distributions and outliers
+
+2. **Success Rate Analysis:**
+   - Track algorithm success/failure rates
+   - Compute empirical success probabilities
+   - Compare against theoretical predictions
+
+3. **Complexity Validation:**
+   - Test across different modulus sizes $y$
+   - Verify $O(\log y)$ average-case complexity
+   - Measure constants in complexity bounds
+
+**Test Set Generation:**
+For each size parameter $s$:
+1. Generate $s$ random test pairs $(x_i, y_i)$
+2. Ensure $\gcd(x_i, y_i) = 1$ (coprime requirement)
+3. Use uniformly random selection from appropriate ranges
+
+**Statistical Measures:**
+- **Mean execution time:** $\bar{t} = \frac{1}{n} \sum_{i=1}^n t_i$
+- **Success rate:** $p = \frac{\text{number of successes}}{n}$
+- **Standard deviation:** $\sigma = \sqrt{\frac{1}{n} \sum_{i=1}^n (t_i - \bar{t})^2}$
+
+**Complexity Verification:**
+Verify the theoretical claim that average time complexity is $O(\log y)$ by checking that measured times grow logarithmically with $y$.
 
 ```javascript
 // Performance benchmarking script
