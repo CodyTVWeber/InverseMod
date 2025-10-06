@@ -6,7 +6,7 @@
 
 ## Abstract
 
-We present a novel forward-iterative algorithm for computing modular multiplicative inverses that achieves logarithmic complexity while offering conceptual simplicity. The algorithm constructs the inverse as a product of carefully chosen multipliers that satisfy a bounded multiplication constraint. We provide theoretical complexity analysis, multiple implementation strategies including backtracking enhancements, and empirical validation through extensive testing.
+We present a forward-iterative heuristic for computing modular multiplicative inverses. The method constructs the inverse, when it succeeds, as a product of multipliers selected near a bounded multiplication constraint. We provide practical implementations with depth-limited search heuristics and empirical evaluation. We do not claim proven complexity bounds or guaranteed completeness.
 
 **Keywords:** modular arithmetic, multiplicative inverse, forward-iterative algorithm, computational number theory, backtracking
 
@@ -32,7 +32,7 @@ Our algorithm introduces:
 1. **Forward-iterative approach** starting from $x$ and working forward
 2. **Bounded multiplication constraint**: $y < (r_i \cdot k_{i+1}) < (r_i + y)$
 3. **Product construction**: Inverse computed as $\prod k_i \pmod{y}$
-4. **Backtracking enhancement** for 100% success rate on coprime pairs
+4. **Depth-limited backtracking heuristic** to explore alternative multipliers (no completeness guarantee)
 
 ## 2. Mathematical Foundation
 
@@ -48,8 +48,7 @@ Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algori
 $$r_0 = x \mod y$$
 
 **Iteration (for $i = 0, 1, \dots, n-1$):**
-Choose $k_{i+1} \in \mathbb{N}$ such that:
-$$y < (r_i \cdot k_{i+1}) < (r_i + y)$$
+Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets. The strict bound $$y < (r_i \cdot k_{i+1}) < (r_i + y)$$ is a target heuristic and may not be attainable for every step with greedy selection; in practice we test candidates and discard those yielding $r_{i+1}=0$ or non-decreasing remainders.
 
 Compute next remainder:
 $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y$$
@@ -118,38 +117,23 @@ inverseModBasic(5, 12);   // Will fail without backtracking
 
 ### 2.2 Mathematical Properties
 
-**Theorem 2.1**: If $\gcd(x, y) = 1$, then there exists a sequence $k_1, k_2, \dots, k_n \in \mathbb{N}$ such that:
-1. $y < (r_i \cdot k_{i+1}) < (r_i + y)$ for each $i$
-2. $r_{i+1} = (r_i \cdot k_{i+1}) \mod y$
-3. $r_0 = x$ and $r_n = 1$
-4. The inverse $z = \prod_{i=1}^n k_i \pmod{y}$
-
-**Proof**: By construction, each step reduces the remainder while maintaining the multiplicative relationship.
-
-**Theorem 2.2**: The algorithm terminates in $O(\log y)$ steps on average for random coprime pairs.
+Remark 2.1 (Heuristic nature). We do not assert that for every coprime pair $(x,y)$ there exists a sequence of multipliers satisfying the above bound and transitions that reaches $r_n=1$. Our implementation uses a limited search over candidates $k$ at each step and stops on failure.
 
 ## 3. Complexity Analysis
 
 ### 3.1 Theoretical Complexity
 
-**Best Case**: $O(1)$ when $x = y - 1$  
-**Average Case**: $O(\log y)$  
-**Worst Case**: $O(\log^2 y)$ with backtracking
+This work does not claim formal asymptotic bounds. Empirically, the number of steps varies across instances; see Section 7 for measurements. Best-, average-, and worst-case complexities are open questions for this heuristic.
 
 ### 3.2 Empirical Analysis
 
-Testing 1000 random coprime pairs shows:
-- Average steps: ~3.5
-- Direct solutions: ~85%
-- Backtracking solutions: ~15%
-- Average backtracks: ~1.2
+Representative empirical runs over random coprime pairs show mixed outcomes; success and step counts depend strongly on search parameters (offset set size, depth and backtrack limits). See the repository scripts for current measurements.
 
 ### 3.3 Complexity Comparison
 
 | Method | Time Complexity | Space Complexity | Success Rate |
 |--------|-----------------|------------------|--------------|
-| InverseMod (Basic) | $O(\log y)$ | $O(\log y)$ | ~85% |
-| InverseMod (Backtracking) | $O(\log y)$ | $O(\log y)$ | 100% |
+| Heuristic Forward Iteration (this work) | – | – | empirical |
 | Extended Euclidean | $O(\log \min(x,y))$ | $O(1)$ | 100% |
 | Fermat's Little Theorem | $O(\log y \cdot M(\log y))$ | $O(\log y)$ | 100% |
 
@@ -187,6 +171,7 @@ For each state $(r_i, d, M_i)$:
 - Skip unproductive paths where $r_{i+1} = 0$ (unless near termination)
 - Skip non-decreasing remainders (unless $r_{i+1} = 1$)
 - Limit backtracking depth to prevent infinite recursion
+- Note: No completeness guarantee; search may fail on some coprime pairs under given limits
 
 ```javascript
 // Helper function: Calculate GCD
@@ -701,20 +686,13 @@ function benchmarkPerformance() {
 
 ### 8.1 Convergence Analysis
 
-**Theorem 8.1**: The remainder sequence $r_0, r_1, \dots, r_n$ satisfies $r_{i+1} < r_i$ for all $i$.
+Observation 8.1. The remainder sequence need not strictly decrease at each step; in practice, implementations prune non-decreasing transitions or backtrack.
 
-**Proof**: By construction, since $y < (r_i \cdot k_{i+1}) < (r_i + y)$ and $r_{i+1} = (r_i \cdot k_{i+1}) \mod y < y < r_i + y$.
-
-**Theorem 8.2**: The algorithm converges in at most $O(\log y)$ steps.
-
-**Proof**: Each step reduces the remainder by a factor of approximately $y/r_i$, leading to logarithmic convergence.
+Open Question 8.2. Establishing nontrivial bounds on convergence and step complexity for this heuristic remains future work.
 
 ### 8.2 Success Probability
 
-For random coprime pairs $(x, y)$:
-$$P(\text{success}) \approx 1 - \frac{1}{\log y}$$
-
-This explains the observed ~85% success rate.
+Empirical success rates depend on search parameters (offset set, depth, and backtrack limits) and vary across datasets. We do not provide a closed-form success probability.
 
 ## 9. Implementation Notes
 
@@ -729,22 +707,21 @@ function inverseModBigInt(x, y) {
 }
 ```
 
-### 9.2 Optimization Strategies
+### 9.2 Implementation Strategies
 
-1. **Binary search for k-values**: $O(\log \log y)$ per iteration
-2. **Memoization of failed paths**
-3. **Early termination heuristics**
-4. **Parallel search for multiple k-values**
+1. **Candidate selection around $\lceil y/r \rceil$**
+2. **Memoization of failed remainders under given depth**
+3. **Early termination and pruning heuristics**
+4. **Parallel exploration of multiple k-candidates (engineering optimization)**
 
 ## 10. Conclusion
 
-We have presented a novel forward-iterative algorithm for computing modular multiplicative inverses with:
-- **100% success rate** for coprime pairs (with backtracking)
-- **$O(\log y)$** average-case complexity
-- **Conceptual simplicity** compared to Extended Euclidean
-- **Educational value** for teaching modular arithmetic
+We presented a forward-iterative heuristic for computing modular inverses:
+- **Heuristic success** on many coprime pairs under practical search limits
+- **Conceptual simplicity** compared to backward Extended Euclidean derivations
+- **Educational value** to illustrate remainder dynamics and search trade-offs
 
-The algorithm represents a significant contribution to computational number theory, offering a fresh perspective on an ancient problem with modern applications in cryptography and computer algebra systems.
+Open problems include formalizing conditions for success, deriving complexity bounds, and designing complete search strategies with practical performance.
 
 ## References
 

@@ -45,11 +45,13 @@ class TestFramework {
             timestamp: new Date().toISOString()
         };
 
-        // Verify correctness if expected value provided
-        if (result.success && expected !== null) {
+        // Always verify correctness when an inverse is returned
+        if (result.success) {
             const actual = (BigInt(result.inverse) * BigInt(x)) % BigInt(y);
             testResult.verified = actual === 1n;
-            testResult.expectedInverse = expected;
+            if (expected !== null) {
+                testResult.expectedInverse = expected;
+            }
         }
 
         this.results.push(testResult);
