@@ -152,7 +152,7 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
       stepNumber: 0,
       remainder: normalizedX,
       multiplier: y - 1,
-      product: ((y - 1) * x) % y,
+      product: ((y - 1) * (y - 1)) % y,
       description: `Self-inverse case: x ≡ y-1, inverse = ${y - 1}`
     };
     return {
@@ -297,8 +297,8 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
       stepNumber: 1,
       remainder: 1,
       multiplier: inv,
-      product: (inv * x) % y,
-      description: `Euclid fallback: (${inv} × ${x}) mod ${y} = ${(inv * x) % y}`
+      product: (inv * (reflected ? (y - normalizedX) : normalizedX)) % y,
+      description: `Euclid fallback on ${reflected ? (y - normalizedX) : normalizedX}: (${inv} × ${reflected ? (y - normalizedX) : normalizedX}) mod ${y}`
     };
     return {
       success: true,

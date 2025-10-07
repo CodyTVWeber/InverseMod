@@ -205,11 +205,11 @@ class ImprovedBacktracker {
 
         // Fast path: self-inverse when x ≡ y-1 (mod y)
         if (x === nBig - 1n) {
-            return { success: true, inverse: nBig - 1n, message: "Self-inverse: x ≡ y-1", steps: 0, backtrackCount: 0 };
+            return { success: true, inverse: nBig - 1n, message: "Self-inverse: x ≡ y-1", multipliers: [nBig - 1n], steps: 1, backtrackCount: 0 };
         }
 
         if (x === 1n) {
-            return { success: true, inverse: 1n, message: "Direct solution: x = 1", steps: 0, backtrackCount: 0 };
+            return { success: true, inverse: 1n, message: "Direct solution: x = 1", multipliers: [1n], steps: 1, backtrackCount: 0 };
         }
 
         // Reflection preconditioning: if x > y/2, work with y - x, then negate inverse
@@ -235,8 +235,8 @@ class ImprovedBacktracker {
                 success: true,
                 inverse: inv,
                 message: "Recovered via Euclid fallback",
-                multipliers: [],
-                steps: 0,
+                multipliers: [inv],
+                steps: 1,
                 backtrackCount: 0
             };
         }

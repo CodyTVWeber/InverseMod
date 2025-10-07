@@ -147,7 +147,8 @@ function largeNumbersScenario() {
         { x: 12345, y: 67890, description: "Medium-sized numbers" },
         { x: 98765, y: 43210, description: "Medium-sized numbers" },
         { x: 111111, y: 222222, description: "Larger numbers" },
-        { x: 999999, y: 1000000, description: "Near-million scale" }
+        { x: 999997, y: 1000000, description: "Near-million scale (reflection)" },
+        { x: 999999, y: 1000000, description: "Near-million scale (self-inverse)" }
     ];
 
     const backtracker = new ImprovedBacktracker({ debug: false, maxBacktracks: 50 });
