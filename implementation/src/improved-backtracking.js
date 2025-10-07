@@ -92,7 +92,7 @@ class ImprovedBacktracker {
     /**
      * Enhanced DFS with parity-aware backtracking
      */
-    dfs(remainder, depth, multipliers, y, backtrackCount) {
+    dfs(remainder, depth, multipliers, y, backtrackCount, counters) {
         if (this.debug) {
             console.log(`Depth ${depth}, Remainder: ${remainder}, Multipliers: [${multipliers.join(', ')}]`);
         }
@@ -118,6 +118,9 @@ class ImprovedBacktracker {
 
             const product = remainder * k;
             let nextRemainder = product % BigInt(y);
+
+            // Count an attempt for this k evaluation
+            if (counters) counters.forwardAttempts++;
 
             // Skip non-productive paths
             if (nextRemainder === 0n && depth < this.maxDepth - 1) continue;
@@ -164,7 +167,7 @@ class ImprovedBacktracker {
             }
 
             // Continue normal DFS
-            const result = this.dfs(nextRemainder, depth + 1, [...multipliers, k], y, backtrackCount);
+            const result = this.dfs(nextRemainder, depth + 1, [...multipliers, k], y, backtrackCount, counters);
 
             if (result) {
                 return result;
@@ -221,7 +224,8 @@ class ImprovedBacktracker {
         }
 
         // Start DFS
-        const result = this.dfs(startRemainder, 0, [], y, 0);
+        const counters = { forwardAttempts: 0 };
+        const result = this.dfs(startRemainder, 0, [], y, 0, counters);
 
         if (!result) {
             // Fallback to Extended Euclid on the (possibly reflected) remainder
@@ -237,7 +241,9 @@ class ImprovedBacktracker {
                 message: "Recovered via Euclid fallback",
                 multipliers: [inv],
                 steps: 1,
-                backtrackCount: 0
+                backtrackCount: 0,
+                forwardAttempts: counters.forwardAttempts,
+                euclidIterations: undefined
             };
         }
 
@@ -258,7 +264,8 @@ class ImprovedBacktracker {
             message: result.backtrackCount > 0 ? `Found using backtracking (${result.backtrackCount} backtracks)` : "Direct solution",
             multipliers: result.multipliers,
             steps: result.multipliers.length,
-            backtrackCount: result.backtrackCount
+            backtrackCount: result.backtrackCount,
+            forwardAttempts: counters.forwardAttempts
         };
     }
 }

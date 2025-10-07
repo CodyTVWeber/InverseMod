@@ -24,6 +24,11 @@ export interface AlgorithmResult {
   method: 'direct' | 'backtracking';
   backtrackCount: number;
   message: string;
+  // Additional diagnostics
+  forwardAttempts?: number; // total k-evaluations tried by forward method (including backtracks)
+  forwardPathLength?: number; // multipliers chosen along the successful forward path
+  euclidIterations?: number; // quotient iterations in Euclid fallback (if used)
+  methodTimeline?: Array<{ method: 'forward' | 'euclid'; steps: number; note?: string }>;
 }
 
 export interface BacktrackingOptions {
@@ -35,23 +40,26 @@ export interface BacktrackingOptions {
 /**
  * Extended Euclidean algorithm (integer version)
  */
-function egcd(a: number, b: number): { g: number; x: number; y: number } {
+function egcd(a: number, b: number): { g: number; x: number; y: number; iters: number } {
   let old_r = a, r = b;
   let old_s = 1, s = 0;
   let old_t = 0, t = 1;
+  let iters = 0;
   while (r !== 0) {
     const q = Math.floor(old_r / r);
     const tmp_r = r; r = old_r - q * r; old_r = tmp_r;
     const tmp_s = s; s = old_s - q * s; old_s = tmp_s;
     const tmp_t = t; t = old_t - q * t; old_t = tmp_t;
+    iters++;
   }
-  return { g: old_r, x: old_s, y: old_t };
+  return { g: old_r, x: old_s, y: old_t, iters };
 }
 
-function inverseEuclid(m: number, n: number): number | null {
-  const { g, x } = egcd(m, n);
+function inverseEuclid(m: number, n: number): { inv: number | null; iters: number } {
+  const { g, x, iters } = egcd(m, n);
   if (g !== 1) return null;
-  return ((x % n) + n) % n;
+  const inv = ((x % n) + n) % n;
+  return { inv, iters };
 }
 
 /**
@@ -193,6 +201,8 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   // Depth-first search with backtracking
   let backtrackCount = 0;
   
+  let forwardAttemptCount = 0;
+
   function dfs(
     currentRemainder: number,
     depth: number,
@@ -224,6 +234,7 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
       
       const product = currentRemainder * k;
       const nextRemainder = product % y;
+      forwardAttemptCount++;
       
       // Skip if we're not making progress
       if (nextRemainder === 0 && depth < maxDepth - 1) {
@@ -280,8 +291,8 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   
   if (!result) {
     // Fallback to Extended Euclid (guaranteed when gcd=1)
-    const invSmall = inverseEuclid(startRemainder, y);
-    if (invSmall === null) {
+    const eg = inverseEuclid(startRemainder, y);
+    if (eg.inv === null) {
       return {
         success: false,
         inverse: 0,
@@ -291,7 +302,7 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
         message: `Failed to find inverse after ${backtrackCount} backtracks`
       };
     }
-    let inv = invSmall;
+    let inv = eg.inv;
     if (reflected) inv = (y - inv) % y;
     const validationStep: AlgorithmStep = {
       stepNumber: 1,
@@ -306,7 +317,14 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
       steps: [initialStep, validationStep],
       method: 'backtracking',
       backtrackCount: backtrackCount,
-      message: 'Recovered via Euclid fallback'
+      message: 'Recovered via Euclid fallback',
+      forwardAttempts: forwardAttemptCount,
+      forwardPathLength: 0,
+      euclidIterations: eg.iters,
+      methodTimeline: [
+        { method: 'forward', steps: forwardAttemptCount, note: 'attempted k-evaluations' },
+        { method: 'euclid', steps: eg.iters, note: 'quotient iterations' }
+      ]
     };
   }
   
@@ -342,7 +360,10 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
     steps: result.steps,
     method: backtrackCount > 0 ? 'backtracking' : 'direct',
     backtrackCount: backtrackCount,
-    message: `Found inverse ${inverse} using ${backtrackCount > 0 ? 'backtracking' : 'direct'} method`
+    message: `Found inverse ${inverse} using ${backtrackCount > 0 ? 'backtracking' : 'direct'} method`,
+    forwardAttempts: forwardAttemptCount,
+    forwardPathLength: multipliers.length,
+    methodTimeline: [ { method: 'forward', steps: multipliers.length, note: 'multipliers in solution path' } ]
   };
 }
 
