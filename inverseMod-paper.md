@@ -606,51 +606,6 @@ Objective: Improve wall-clock latency by exploring several promising $k$ branche
 
 Explore a handful of candidate $k$ values in parallel and continue from the branch with smallest next remainder; useful when latency is critical or hardware parallelism is available.
 
-**Algorithm 7: DP-Based InverseMod**
-
-**Mathematical Description:**
-
-This approach uses dynamic programming to solve the inverse computation problem by breaking it down into overlapping subproblems. The key insight is that the solution for a remainder $r$ can be constructed from solutions for smaller remainders.
-
-**Problem Formulation:**
-We want to find a sequence of multipliers $k_1, k_2, \dots, k_n$ such that starting from $r_0 = x \mod y$, we reach $r_n = 1$ following the transition rules.
-
-**State Definition:**
-Let $dp[r][d]$ represent whether we can reach remainder 1 starting from remainder $r$ in exactly $d$ steps.
-
-**Recurrence Relation:**
-For each possible remainder $r$ and depth $d$:
-$$dp[r][d] = \bigvee_{k} \left( (r \cdot k) \mod y = r' \land dp[r'][d-1] \right)$$
-where $k$ satisfies the bound constraint:
-$$y < (r \cdot k) < (r + y)$$
-
-**Base Cases:**
-- $dp[1][0] = \text{true}$ (already at target)
-- $dp[r][0] = \text{false}$ for $r \neq 1$ (can't reach in 0 steps)
-
-**Solution Reconstruction:**
-Once we find a valid depth $d$ where $dp[x \mod y][d] = \text{true}$, we can reconstruct the multiplier sequence by backtracking through the DP table.
-
-**Complexity:**
-- Time: $O(y \cdot \log y \cdot d_{\max})$ where $d_{\max}$ is maximum depth
-- Space: $O(y \cdot d_{\max})$ for the DP table
-
-```javascript
-// Dynamic programming approach for inverse computation
-function inverseModDP(x, y) {
-    // This is a placeholder for dynamic programming approach
-
-    console.log(`Dynamic programming approach for ${x} mod ${y}`);
-    console.log("This approach would:");
-    console.log("1. Use memoization on (remainder, depth) pairs");
-    console.log("2. Build solution from base cases");
-    console.log("3. Use optimal substructure properties");
-
-    // Placeholder implementation
-    return { success: false, message: "Dynamic programming implementation needed" };
-}
-```
-
 ## 7. Comprehensive Testing Framework
 
 ### 7.1 Test Suite
