@@ -150,7 +150,8 @@ function largeNumbersScenario() {
         { x: 999999, y: 1000000, description: "Near-million scale" }
     ];
 
-    const backtracker = new ImprovedBacktracker({ debug: false, maxBacktracks: 50 });
+    // Use tighter limits to avoid hanging on hard even-modulus cases
+    const backtracker = new ImprovedBacktracker({ debug: false, maxBacktracks: 200, maxNodes: 20000 });
 
     testCases.forEach(({ x, y, description }) => {
         console.log(`\nTesting ${x} mod ${y} (${description})`);
@@ -162,6 +163,8 @@ function largeNumbersScenario() {
         console.log(`Result: ${result.success ? '✓' : '✗'}, Time: ${(endTime - startTime).toFixed(3)}ms`);
         if (result.success) {
             console.log(`Inverse: ${result.inverse}, Steps: ${result.steps}, Backtracks: ${result.backtrackCount}`);
+        } else {
+            console.log(`Message: ${result.message}`);
         }
     });
 }

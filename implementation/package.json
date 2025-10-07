@@ -8,6 +8,7 @@
     "test:quick": "node src/test-framework.js --quick",
     "test:scenarios": "node src/test-framework.js --scenarios",
     "test:stress": "node src/test-framework.js --stress 1000 10000",
+    "steps": "node src/show-steps.js",
     "demo": "node src/demo.js",
     "analysis": "node src/mathematical-analysis.js",
     "alternatives": "node src/alternative-approaches.js",

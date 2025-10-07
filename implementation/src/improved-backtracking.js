@@ -12,6 +12,11 @@ class ImprovedBacktracker {
         this.maxBacktracks = options.maxBacktracks || 20;
         this.multiplierOffsets = options.multiplierOffsets || [0, 1, 2, 3, 4, 5];
         this.debug = options.debug || false;
+        this.recordTrace = options.recordTrace || false;
+        this.maxNodes = options.maxNodes || 25000; // hard cap on explored nodes
+        this._nodesVisited = 0;
+        this._initialX = 0n;
+        this.trace = [];
     }
 
     /**
@@ -48,22 +53,15 @@ class ImprovedBacktracker {
     }
 
     /**
-     * Recalculate remainders from a specific point after backtracking
+     * Apply multipliers sequentially starting from an initial remainder
+     * Returns the final remainder.
      */
-    recalculateFrom(x, multipliers, startIndex, y) {
-        const remainders = [BigInt(x)];
-        for (let i = 0; i < multipliers.length; i++) {
-            if (i < startIndex) {
-                // Use original multipliers up to startIndex
-                const product = remainders[i] * multipliers[i];
-                remainders.push(product % BigInt(y));
-            } else {
-                // Use new multipliers from startIndex onward
-                const product = remainders[i] * multipliers[i];
-                remainders.push(product % BigInt(y));
-            }
+    applyMultipliers(initialRemainder, multipliers, y) {
+        let remainder = BigInt(initialRemainder);
+        for (const k of multipliers) {
+            remainder = (remainder * k) % BigInt(y);
         }
-        return remainders;
+        return remainder;
     }
 
     /**
@@ -75,14 +73,24 @@ class ImprovedBacktracker {
         }
 
         if (depth > this.maxDepth) {
+            if (this.recordTrace) this.trace.push({ type: 'limit', reason: 'maxDepth', depth });
             return null;
         }
 
         if (remainder === 1n) {
+            if (this.recordTrace) this.trace.push({ type: 'success', depth, multipliers: [...multipliers], backtrackCount });
             return { multipliers, backtrackCount };
         }
 
         if (remainder === 0n) {
+            if (this.recordTrace) this.trace.push({ type: 'dead_end', depth, remainder });
+            return null;
+        }
+
+        // Global node cap to prevent hangs
+        this._nodesVisited++;
+        if (this._nodesVisited > this.maxNodes) {
+            if (this.recordTrace) this.trace.push({ type: 'limit', reason: 'maxNodes', visited: this._nodesVisited });
             return null;
         }
 
@@ -99,6 +107,17 @@ class ImprovedBacktracker {
             // Skip non-productive paths
             if (nextRemainder === 0n && depth < this.maxDepth - 1) continue;
             if (nextRemainder >= remainder && nextRemainder !== 1n) continue;
+
+            if (this.recordTrace) {
+                this.trace.push({
+                    type: 'step',
+                    depth,
+                    remainder,
+                    k: k,
+                    product,
+                    nextRemainder
+                });
+            }
 
             // Check for parity-based failure pattern
             if (nextRemainder === 0n && this.isEven(BigInt(y)) && this.isEven(remainder)) {
@@ -117,17 +136,22 @@ class ImprovedBacktracker {
                     const backtrackedMultipliers = [...multipliers];
                     backtrackedMultipliers[oddKIndex] += 2n; // Increment by 2 to keep odd
 
-                    // Recalculate remainders from that point
-                    const recalculatedRemainders = this.recalculateFrom(
-                        multipliers[0], // x value is first multiplier? Wait, need to fix this
-                        backtrackedMultipliers,
-                        oddKIndex,
-                        y
-                    );
+                    // Recompute remainder after applying updated multipliers from initial remainder
+                    const recalculatedRemainder = this.applyMultipliers(this._initialX, backtrackedMultipliers, y);
+
+                    if (this.recordTrace) {
+                        this.trace.push({
+                            type: 'parity_backtrack',
+                            depth,
+                            oddKIndex,
+                            updatedK: backtrackedMultipliers[oddKIndex],
+                            resultingRemainder: recalculatedRemainder
+                        });
+                    }
 
                     // Continue DFS from the backtracked position
                     const backtrackResult = this.dfs(
-                        recalculatedRemainders[recalculatedRemainders.length - 1],
+                        recalculatedRemainder,
                         depth,
                         backtrackedMultipliers,
                         y,
@@ -147,8 +171,14 @@ class ImprovedBacktracker {
                 return result;
             }
 
-            if (offset > 0 && backtrackCount > this.maxBacktracks) {
-                return null;
+            // Branch failed, count a backtrack and check limits
+            if (offset >= 0) {
+                backtrackCount += 1;
+                if (this.recordTrace) this.trace.push({ type: 'backtrack', depth, kTried: k, newBacktrackCount: backtrackCount });
+                if (backtrackCount > this.maxBacktracks) {
+                    if (this.recordTrace) this.trace.push({ type: 'limit', reason: 'maxBacktracks', count: backtrackCount });
+                    return null;
+                }
             }
         }
 
@@ -178,6 +208,9 @@ class ImprovedBacktracker {
 
         // Normalize x
         x = BigInt(x % y);
+        this._initialX = x;
+        this._nodesVisited = 0;
+        if (this.recordTrace) this.trace = [];
         if (x === 1n) {
             return { success: true, inverse: 1n, message: "Direct solution: x = 1", steps: 0, backtrackCount: 0 };
         }
@@ -195,7 +228,7 @@ class ImprovedBacktracker {
             inverse = (inverse * k) % BigInt(y);
         }
 
-        return {
+        const response = {
             success: true,
             inverse,
             message: result.backtrackCount > 0 ? `Found using backtracking (${result.backtrackCount} backtracks)` : "Direct solution",
@@ -203,6 +236,12 @@ class ImprovedBacktracker {
             steps: result.multipliers.length,
             backtrackCount: result.backtrackCount
         };
+
+        if (this.recordTrace) {
+            response.trace = this.trace;
+        }
+
+        return response;
     }
 }
 
@@ -225,30 +264,32 @@ if (typeof window !== 'undefined') {
     window.InverseModImproved = { ImprovedBacktracker, inverseModImproved };
 }
 
-// Test cases
-console.log("=== Improved Backtracking Tests ===");
+// Self-test only when executed directly
+if (require.main === module) {
+    console.log("=== Improved Backtracking Tests ===");
 
-// Test case that requires backtracking: 5 mod 12
-console.log("\nTesting 5 mod 12 (should require backtracking):");
-const result1 = inverseModImproved(5, 12, { debug: false });
-console.log(`Success: ${result1.success}, Inverse: ${result1.inverse}`);
-if (result1.success) {
-    const verification = (result1.inverse * BigInt(5)) % BigInt(12);
-    console.log(`Verification: (${result1.inverse} * 5) mod 12 = ${verification}`);
+    // Test case that requires backtracking: 5 mod 12
+    console.log("\nTesting 5 mod 12 (should require backtracking):");
+    const result1 = inverseModImproved(5, 12, { debug: false });
+    console.log(`Success: ${result1.success}, Inverse: ${result1.inverse}`);
+    if (result1.success) {
+        const verification = (result1.inverse * BigInt(5)) % BigInt(12);
+        console.log(`Verification: (${result1.inverse} * 5) mod 12 = ${verification}`);
+    }
+
+    // Test case that works directly: 3 mod 7
+    console.log("\nTesting 3 mod 7 (should work directly):");
+    const result2 = inverseModImproved(3, 7, { debug: false });
+    console.log(`Success: ${result2.success}, Inverse: ${result2.inverse}`);
+    if (result2.success) {
+        const verification = (result2.inverse * BigInt(3)) % BigInt(7);
+        console.log(`Verification: (${result2.inverse} * 3) mod 7 = ${verification}`);
+    }
+
+    // Test case with no inverse: 4 mod 6
+    console.log("\nTesting 4 mod 6 (no inverse should exist):");
+    const result3 = inverseModImproved(4, 6, { debug: false });
+    console.log(`Success: ${result3.success}, Message: ${result3.message}`);
 }
-
-// Test case that works directly: 3 mod 7
-console.log("\nTesting 3 mod 7 (should work directly):");
-const result2 = inverseModImproved(3, 7, { debug: false });
-console.log(`Success: ${result2.success}, Inverse: ${result2.inverse}`);
-if (result2.success) {
-    const verification = (result2.inverse * BigInt(3)) % BigInt(7);
-    console.log(`Verification: (${result2.inverse} * 3) mod 7 = ${verification}`);
-}
-
-// Test case with no inverse: 4 mod 6
-console.log("\nTesting 4 mod 6 (no inverse should exist):");
-const result3 = inverseModImproved(4, 6, { debug: false });
-console.log(`Success: ${result3.success}, Message: ${result3.message}`);
 
 module.exports = { ImprovedBacktracker, inverseModImproved };

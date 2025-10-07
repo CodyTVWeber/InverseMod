@@ -166,14 +166,28 @@ class TestFramework {
 
         const min = Math.min(...values);
         const max = Math.max(...values);
+
+        // When all values are the same, avoid NaN buckets by returning a single bucket
+        if (min === max) {
+            const key = `${min.toFixed(2)}-${max.toFixed(2)}`;
+            return { [key]: values.length };
+        }
+
         const range = max - min;
-        const bucketSize = range / bucketCount;
+        const safeBucketCount = Math.max(1, bucketCount | 0);
+        const bucketSize = range / safeBucketCount;
 
         const distribution = {};
 
         values.forEach(value => {
-            const bucket = Math.min(Math.floor((value - min) / bucketSize), bucketCount - 1);
-            const bucketKey = `${(min + bucket * bucketSize).toFixed(2)}-${(min + (bucket + 1) * bucketSize).toFixed(2)}`;
+            // Guard against floating point edge cases
+            let bucketIndex = Math.floor((value - min) / bucketSize);
+            if (!Number.isFinite(bucketIndex) || bucketIndex < 0) bucketIndex = 0;
+            if (bucketIndex >= safeBucketCount) bucketIndex = safeBucketCount - 1;
+
+            const bucketStart = min + bucketIndex * bucketSize;
+            const bucketEnd = bucketStart + bucketSize;
+            const bucketKey = `${bucketStart.toFixed(2)}-${bucketEnd.toFixed(2)}`;
 
             if (!distribution[bucketKey]) {
                 distribution[bucketKey] = 0;
