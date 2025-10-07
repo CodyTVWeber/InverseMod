@@ -51,7 +51,11 @@ Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algori
 $$r_0 = x \mod y$$
 
 **Iteration (for $i = 0, 1, \dots, n-1$):**
-Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets. The strict bound $$y < (r_i \cdot k_{i+1}) < (r_i + y)$$ is a target heuristic and may not be attainable at every step with greedy selection; in practice we test a small neighborhood of candidates and discard those yielding $r_{i+1}=0$ or non-decreasing remainders.
+Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets.
+
+Target band (heuristic):
+$$y < r_i \cdot k_{i+1} < r_i + y$$
+This band is a heuristic target and may not be attainable at every step with greedy selection; in practice we test a small neighborhood of candidates and discard those yielding $r_{i+1} = 0$ or non-decreasing remainders.
 
 Compute next remainder:
 $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y$$
