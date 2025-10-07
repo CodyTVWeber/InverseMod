@@ -186,6 +186,16 @@ describe('InverseMod Algorithm Tests', () => {
       expect(result.success).toBe(true);
       expect((result.inverse * x) % y).toBe(1);
     });
+
+    it('should handle large case 999999 mod 1000000 (self-inverse)', () => {
+      const x = 999999;
+      const y = 1000000;
+      // x = y - 1, so inverse is x itself
+      const result = inverseMod(x, y);
+      expect(result.success).toBe(true);
+      expect(result.inverse).toBe(x % y);
+      expect((result.inverse * x) % y).toBe(1);
+    });
   });
   
   describe('Algorithm Properties', () => {
