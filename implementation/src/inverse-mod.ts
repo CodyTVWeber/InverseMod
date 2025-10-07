@@ -24,12 +24,42 @@ export interface AlgorithmResult {
   method: 'direct' | 'backtracking';
   backtrackCount: number;
   message: string;
+  // Additional diagnostics
+  forwardAttempts?: number; // total k-evaluations tried by forward method (including backtracks)
+  forwardPathLength?: number; // multipliers chosen along the successful forward path
+  euclidIterations?: number; // quotient iterations in Euclid fallback (if used)
+  methodTimeline?: Array<{ method: 'forward' | 'euclid'; steps: number; note?: string }>;
 }
 
 export interface BacktrackingOptions {
   maxDepth?: number;
   maxBacktracks?: number;
   multiplierOffsets?: number[];
+}
+
+/**
+ * Extended Euclidean algorithm (integer version)
+ */
+function egcd(a: number, b: number): { g: number; x: number; y: number; iters: number } {
+  let old_r = a, r = b;
+  let old_s = 1, s = 0;
+  let old_t = 0, t = 1;
+  let iters = 0;
+  while (r !== 0) {
+    const q = Math.floor(old_r / r);
+    const tmp_r = r; r = old_r - q * r; old_r = tmp_r;
+    const tmp_s = s; s = old_s - q * s; old_s = tmp_s;
+    const tmp_t = t; t = old_t - q * t; old_t = tmp_t;
+    iters++;
+  }
+  return { g: old_r, x: old_s, y: old_t, iters };
+}
+
+function inverseEuclid(m: number, n: number): { inv: number | null; iters: number } {
+  const { g, x, iters } = egcd(m, n);
+  if (g !== 1) return null;
+  const inv = ((x % n) + n) % n;
+  return { inv, iters };
 }
 
 /**
@@ -122,6 +152,33 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   
   // Normalize x to be less than y
   const normalizedX = x % y;
+
+  // Reflection preconditioning: flip to the small side when m > y/2
+  // Fast path: if m = y-1, the inverse is m
+  if (normalizedX === y - 1) {
+    const step: AlgorithmStep = {
+      stepNumber: 0,
+      remainder: normalizedX,
+      multiplier: y - 1,
+      product: ((y - 1) * (y - 1)) % y,
+      description: `Self-inverse case: x ≡ y-1, inverse = ${y - 1}`
+    };
+    return {
+      success: true,
+      inverse: y - 1,
+      steps: [step],
+      method: 'direct',
+      backtrackCount: 0,
+      message: 'Self-inverse fast path (m = y-1)'
+    };
+  }
+
+  let startRemainder = normalizedX;
+  let reflected = false;
+  if (startRemainder > Math.floor(y / 2)) {
+    startRemainder = y - startRemainder; // work with smaller residue
+    reflected = true;
+  }
   
   // Special case: x = 1
   if (normalizedX === 1) {
@@ -144,6 +201,8 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   // Depth-first search with backtracking
   let backtrackCount = 0;
   
+  let forwardAttemptCount = 0;
+
   function dfs(
     currentRemainder: number,
     depth: number,
@@ -175,6 +234,7 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
       
       const product = currentRemainder * k;
       const nextRemainder = product % y;
+      forwardAttemptCount++;
       
       // Skip if we're not making progress
       if (nextRemainder === 0 && depth < maxDepth - 1) {
@@ -221,22 +281,50 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   // Start the search
   const initialStep: AlgorithmStep = {
     stepNumber: 0,
-    remainder: normalizedX,
+    remainder: startRemainder,
     multiplier: 1,
-    product: normalizedX,
-    description: `Starting with x = ${x} ≡ ${normalizedX} (mod ${y})`
+    product: startRemainder,
+    description: `Starting with x = ${x} ≡ ${startRemainder} (mod ${y})${reflected ? ' [reflected to small side]' : ''}`
   };
   
-  const result = dfs(normalizedX, 0, [], [normalizedX], [initialStep]);
+  const result = dfs(startRemainder, 0, [], [startRemainder], [initialStep]);
   
   if (!result) {
+    // Fallback to Extended Euclid (guaranteed when gcd=1)
+    const eg = inverseEuclid(startRemainder, y);
+    if (eg.inv === null) {
+      return {
+        success: false,
+        inverse: 0,
+        steps: [initialStep],
+        method: 'backtracking',
+        backtrackCount: backtrackCount,
+        message: `Failed to find inverse after ${backtrackCount} backtracks`
+      };
+    }
+    let inv = eg.inv;
+    if (reflected) inv = (y - inv) % y;
+    const validationStep: AlgorithmStep = {
+      stepNumber: 1,
+      remainder: 1,
+      multiplier: inv,
+      product: (inv * (reflected ? (y - normalizedX) : normalizedX)) % y,
+      description: `Euclid fallback on ${reflected ? (y - normalizedX) : normalizedX}: (${inv} × ${reflected ? (y - normalizedX) : normalizedX}) mod ${y}`
+    };
     return {
-      success: false,
-      inverse: 0,
-      steps: [initialStep],
+      success: true,
+      inverse: inv,
+      steps: [initialStep, validationStep],
       method: 'backtracking',
       backtrackCount: backtrackCount,
-      message: `Failed to find inverse after ${backtrackCount} backtracks`
+      message: 'Recovered via Euclid fallback',
+      forwardAttempts: forwardAttemptCount,
+      forwardPathLength: 0,
+      euclidIterations: eg.iters,
+      methodTimeline: [
+        { method: 'forward', steps: forwardAttemptCount, note: 'attempted k-evaluations' },
+        { method: 'euclid', steps: eg.iters, note: 'quotient iterations' }
+      ]
     };
   }
   
@@ -248,6 +336,11 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
     const k = result.steps[i].multiplier;
     multipliers.push(k);
     inverse = (inverse * k) % y;
+  }
+
+  // If we reflected to (y - m), recover inv(m) ≡ -inv(y-m) (mod y)
+  if (reflected) {
+    inverse = (y - inverse) % y;
   }
   
   // Add final validation step
@@ -267,7 +360,10 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
     steps: result.steps,
     method: backtrackCount > 0 ? 'backtracking' : 'direct',
     backtrackCount: backtrackCount,
-    message: `Found inverse ${inverse} using ${backtrackCount > 0 ? 'backtracking' : 'direct'} method`
+    message: `Found inverse ${inverse} using ${backtrackCount > 0 ? 'backtracking' : 'direct'} method`,
+    forwardAttempts: forwardAttemptCount,
+    forwardPathLength: multipliers.length,
+    methodTimeline: [ { method: 'forward', steps: multipliers.length, note: 'multipliers in solution path' } ]
   };
 }
 

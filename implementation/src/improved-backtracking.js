@@ -34,6 +34,29 @@ class ImprovedBacktracker {
     }
 
     /**
+     * Extended Euclidean algorithm (BigInt)
+     */
+    egcdBig(a, b) {
+        let old_r = a, r = b;
+        let old_s = 1n, s = 0n;
+        let old_t = 0n, t = 1n;
+        while (r !== 0n) {
+            const q = old_r / r;
+            const tmp_r = r; r = old_r - q * r; old_r = tmp_r;
+            const tmp_s = s; s = old_s - q * s; old_s = tmp_s;
+            const tmp_t = t; t = old_t - q * t; old_t = tmp_t;
+        }
+        return { g: old_r, x: old_s, y: old_t };
+    }
+
+    inverseEuclidBig(m, n) {
+        const { g, x } = this.egcdBig(m, n);
+        if (g !== 1n) return null;
+        const inv = ((x % n) + n) % n;
+        return inv;
+    }
+
+    /**
      * Check if a number is even
      */
     isEven(n) {
@@ -67,7 +90,7 @@ class ImprovedBacktracker {
     /**
      * Enhanced DFS with parity-aware backtracking
      */
-    dfs(remainder, depth, multipliers, y, backtrackCount) {
+    dfs(remainder, depth, multipliers, y, backtrackCount, counters) {
         if (this.debug) {
             console.log(`Depth ${depth}, Remainder: ${remainder}, Multipliers: [${multipliers.join(', ')}]`);
         }
@@ -103,6 +126,9 @@ class ImprovedBacktracker {
 
             const product = remainder * k;
             let nextRemainder = product % BigInt(y);
+
+            // Count an attempt for this k evaluation
+            if (counters) counters.forwardAttempts++;
 
             // Skip non-productive paths
             if (nextRemainder === 0n && depth < this.maxDepth - 1) continue;
@@ -165,7 +191,7 @@ class ImprovedBacktracker {
             }
 
             // Continue normal DFS
-            const result = this.dfs(nextRemainder, depth + 1, [...multipliers, k], y, backtrackCount);
+            const result = this.dfs(nextRemainder, depth + 1, [...multipliers, k], y, backtrackCount, counters);
 
             if (result) {
                 return result;
@@ -207,19 +233,50 @@ class ImprovedBacktracker {
         }
 
         // Normalize x
+        const nBig = BigInt(y);
         x = BigInt(x % y);
         this._initialX = x;
         this._nodesVisited = 0;
         if (this.recordTrace) this.trace = [];
+
+        // Fast path: self-inverse when x ≡ y-1 (mod y)
+        if (x === nBig - 1n) {
+            return { success: true, inverse: nBig - 1n, message: "Self-inverse: x ≡ y-1", multipliers: [nBig - 1n], steps: 1, backtrackCount: 0 };
+        }
         if (x === 1n) {
-            return { success: true, inverse: 1n, message: "Direct solution: x = 1", steps: 0, backtrackCount: 0 };
+            return { success: true, inverse: 1n, message: "Direct solution: x = 1", multipliers: [1n], steps: 1, backtrackCount: 0 };
+        }
+
+        // Reflection preconditioning: if x > y/2, work with y - x, then negate inverse
+        let startRemainder = x;
+        let reflected = false;
+        if (startRemainder > nBig / 2n) {
+            startRemainder = nBig - startRemainder;
+            reflected = true;
         }
 
         // Start DFS
-        const result = this.dfs(x, 0, [], y, 0);
+        const counters = { forwardAttempts: 0 };
+        const result = this.dfs(startRemainder, 0, [], y, 0, counters);
 
         if (!result) {
-            return { success: false, inverse: 0n, message: "Failed to find inverse" };
+            // Fallback to Extended Euclid on the (possibly reflected) remainder
+            const invSmall = this.inverseEuclidBig(startRemainder, nBig);
+            if (invSmall === null) {
+                return { success: false, inverse: 0n, message: "Failed to find inverse" };
+            }
+            let inv = invSmall;
+            if (reflected) inv = (nBig - inv) % nBig;
+            return {
+                success: true,
+                inverse: inv,
+                message: "Recovered via Euclid fallback",
+                multipliers: [inv],
+                steps: 1,
+                backtrackCount: 0,
+                forwardAttempts: counters.forwardAttempts,
+                euclidIterations: undefined
+            };
         }
 
         // Calculate final inverse
@@ -228,13 +285,19 @@ class ImprovedBacktracker {
             inverse = (inverse * k) % BigInt(y);
         }
 
+        // If we reflected, recover inv(original) ≡ -inv(reflected) (mod y)
+        if (reflected) {
+            inverse = (nBig - inverse) % nBig;
+        }
+
         const response = {
             success: true,
             inverse,
             message: result.backtrackCount > 0 ? `Found using backtracking (${result.backtrackCount} backtracks)` : "Direct solution",
             multipliers: result.multipliers,
             steps: result.multipliers.length,
-            backtrackCount: result.backtrackCount
+            backtrackCount: result.backtrackCount,
+            forwardAttempts: counters.forwardAttempts
         };
 
         if (this.recordTrace) {

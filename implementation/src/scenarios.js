@@ -35,6 +35,15 @@ function happyPathScenario() {
             const verification = (result.inverse * BigInt(x)) % BigInt(y);
             console.log(`Verification: (${result.inverse} * ${x}) mod ${y} = ${verification}`);
             console.log(`Backtracks used: ${result.backtrackCount}`);
+            if (typeof result.forwardAttempts !== 'undefined') {
+                console.log(`Forward attempts: ${result.forwardAttempts}`);
+            }
+            if (typeof result.euclidIterations !== 'undefined') {
+                console.log(`Euclid iterations: ${result.euclidIterations}`);
+            }
+            if (Array.isArray(result.methodTimeline)) {
+                console.log(`Method timeline: ${JSON.stringify(result.methodTimeline)}`);
+            }
         }
     });
 }
@@ -147,7 +156,8 @@ function largeNumbersScenario() {
         { x: 12345, y: 67890, description: "Medium-sized numbers" },
         { x: 98765, y: 43210, description: "Medium-sized numbers" },
         { x: 111111, y: 222222, description: "Larger numbers" },
-        { x: 999999, y: 1000000, description: "Near-million scale" }
+        { x: 999997, y: 1000000, description: "Near-million scale (reflection)" },
+        { x: 999999, y: 1000000, description: "Near-million scale (self-inverse)" }
     ];
 
     // Use tighter limits to avoid hanging on hard even-modulus cases
@@ -163,6 +173,15 @@ function largeNumbersScenario() {
         console.log(`Result: ${result.success ? '✓' : '✗'}, Time: ${(endTime - startTime).toFixed(3)}ms`);
         if (result.success) {
             console.log(`Inverse: ${result.inverse}, Steps: ${result.steps}, Backtracks: ${result.backtrackCount}`);
+            if (typeof result.forwardAttempts !== 'undefined') {
+                console.log(`Forward attempts: ${result.forwardAttempts}`);
+            }
+            if (typeof result.euclidIterations !== 'undefined') {
+                console.log(`Euclid iterations: ${result.euclidIterations}`);
+            }
+            if (Array.isArray(result.methodTimeline)) {
+                console.log(`Method timeline: ${JSON.stringify(result.methodTimeline)}`);
+            }
         } else {
             console.log(`Message: ${result.message}`);
         }
