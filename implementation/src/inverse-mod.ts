@@ -33,6 +33,28 @@ export interface BacktrackingOptions {
 }
 
 /**
+ * Extended Euclidean algorithm (integer version)
+ */
+function egcd(a: number, b: number): { g: number; x: number; y: number } {
+  let old_r = a, r = b;
+  let old_s = 1, s = 0;
+  let old_t = 0, t = 1;
+  while (r !== 0) {
+    const q = Math.floor(old_r / r);
+    const tmp_r = r; r = old_r - q * r; old_r = tmp_r;
+    const tmp_s = s; s = old_s - q * s; old_s = tmp_s;
+    const tmp_t = t; t = old_t - q * t; old_t = tmp_t;
+  }
+  return { g: old_r, x: old_s, y: old_t };
+}
+
+function inverseEuclid(m: number, n: number): number | null {
+  const { g, x } = egcd(m, n);
+  if (g !== 1) return null;
+  return ((x % n) + n) % n;
+}
+
+/**
  * Compute the greatest common divisor using Euclidean algorithm
  */
 export function gcd(a: number, b: number): number {
@@ -122,6 +144,33 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   
   // Normalize x to be less than y
   const normalizedX = x % y;
+
+  // Reflection preconditioning: flip to the small side when m > y/2
+  // Fast path: if m = y-1, the inverse is m
+  if (normalizedX === y - 1) {
+    const step: AlgorithmStep = {
+      stepNumber: 0,
+      remainder: normalizedX,
+      multiplier: y - 1,
+      product: ((y - 1) * x) % y,
+      description: `Self-inverse case: x ≡ y-1, inverse = ${y - 1}`
+    };
+    return {
+      success: true,
+      inverse: y - 1,
+      steps: [step],
+      method: 'direct',
+      backtrackCount: 0,
+      message: 'Self-inverse fast path (m = y-1)'
+    };
+  }
+
+  let startRemainder = normalizedX;
+  let reflected = false;
+  if (startRemainder > Math.floor(y / 2)) {
+    startRemainder = y - startRemainder; // work with smaller residue
+    reflected = true;
+  }
   
   // Special case: x = 1
   if (normalizedX === 1) {
@@ -221,22 +270,43 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
   // Start the search
   const initialStep: AlgorithmStep = {
     stepNumber: 0,
-    remainder: normalizedX,
+    remainder: startRemainder,
     multiplier: 1,
-    product: normalizedX,
-    description: `Starting with x = ${x} ≡ ${normalizedX} (mod ${y})`
+    product: startRemainder,
+    description: `Starting with x = ${x} ≡ ${startRemainder} (mod ${y})${reflected ? ' [reflected to small side]' : ''}`
   };
   
-  const result = dfs(normalizedX, 0, [], [normalizedX], [initialStep]);
+  const result = dfs(startRemainder, 0, [], [startRemainder], [initialStep]);
   
   if (!result) {
+    // Fallback to Extended Euclid (guaranteed when gcd=1)
+    const invSmall = inverseEuclid(startRemainder, y);
+    if (invSmall === null) {
+      return {
+        success: false,
+        inverse: 0,
+        steps: [initialStep],
+        method: 'backtracking',
+        backtrackCount: backtrackCount,
+        message: `Failed to find inverse after ${backtrackCount} backtracks`
+      };
+    }
+    let inv = invSmall;
+    if (reflected) inv = (y - inv) % y;
+    const validationStep: AlgorithmStep = {
+      stepNumber: 1,
+      remainder: 1,
+      multiplier: inv,
+      product: (inv * x) % y,
+      description: `Euclid fallback: (${inv} × ${x}) mod ${y} = ${(inv * x) % y}`
+    };
     return {
-      success: false,
-      inverse: 0,
-      steps: [initialStep],
+      success: true,
+      inverse: inv,
+      steps: [initialStep, validationStep],
       method: 'backtracking',
       backtrackCount: backtrackCount,
-      message: `Failed to find inverse after ${backtrackCount} backtracks`
+      message: 'Recovered via Euclid fallback'
     };
   }
   
@@ -248,6 +318,11 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
     const k = result.steps[i].multiplier;
     multipliers.push(k);
     inverse = (inverse * k) % y;
+  }
+
+  // If we reflected to (y - m), recover inv(m) ≡ -inv(y-m) (mod y)
+  if (reflected) {
+    inverse = (y - inverse) % y;
   }
   
   // Add final validation step

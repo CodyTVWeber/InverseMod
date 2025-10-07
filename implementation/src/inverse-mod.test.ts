@@ -176,6 +176,17 @@ describe('InverseMod Algorithm Tests', () => {
       }
     });
   });
+
+  describe('Reflection Preconditioning', () => {
+    it('should handle large case 999997 mod 1000000 via reflection', () => {
+      const x = 999997;
+      const y = 1000000;
+      // gcd(999997, 1000000) = 1 since 999997 is prime relative to 10^6
+      const result = inverseMod(x, y, { maxBacktracks: 200, maxDepth: 256 });
+      expect(result.success).toBe(true);
+      expect((result.inverse * x) % y).toBe(1);
+    });
+  });
   
   describe('Algorithm Properties', () => {
     

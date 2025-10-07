@@ -140,7 +140,7 @@ Two immediate consequences:
 - Inverse recovery after reflection: if $u$ satisfies $(y-m)\,u \equiv 1 \pmod{y}$, then
   $$m\cdot(-u) \equiv 1 \pmod{y} \quad\Rightarrow\quad m^{-1} \equiv -u \equiv y-u \pmod{y}.$$
   Equivalently,
-  $$\operatorname{inv}(m) \equiv -\operatorname{inv}(y-m) \pmod{y}.$$
+  $$m^{-1} \equiv -(y-m)^{-1} \pmod{y}.$$
 
 Practical implication: when $m>y/2$, invert $y-m$ instead (which is < $y/2$), then negate the result modulo $y$. This guarantees the working residue is at most $\lfloor (y-1)/2 \rfloor$.
 
