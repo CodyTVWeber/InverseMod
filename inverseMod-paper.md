@@ -41,8 +41,6 @@ Our algorithm introduces:
 
 ### 2.1 Algorithm Definition
 
-**Algorithm 1: Basic InverseMod**
-
 **Mathematical Description:**
 
 Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algorithm constructs a sequence of remainders $r_0, r_1, \dots, r_n$ and multipliers $k_1, k_2, \dots, k_n$ such that:
@@ -51,7 +49,11 @@ Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algori
 $$r_0 = x \mod y$$
 
 **Iteration (for $i = 0, 1, \dots, n-1$):**
-Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets. The strict bound $$y < (r_i \cdot k_{i+1}) < (r_i + y)$$ is a target heuristic and may not be attainable at every step with greedy selection; in practice we test a small neighborhood of candidates and discard those yielding $r_{i+1}=0$ or non-decreasing remainders.
+Choose $k_{i+1} \in \mathbb{N}$ guided by the heuristic base choice $k^{\text{base}}_{i+1} = \lceil y / r_i \rceil$ and small nonnegative offsets.
+
+Target band (heuristic):
+$$y < r_i \cdot k_{i+1} < r_i + y$$
+This band is a heuristic target and may not be attainable at every step with greedy selection; in practice we test a small neighborhood of candidates and discard those yielding $r_{i+1} = 0$ or non-decreasing remainders.
 
 Compute next remainder:
 $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y$$
@@ -154,8 +156,6 @@ Representative empirical runs over random coprime pairs show mixed outcomes; suc
 
 The basic algorithm can fail when the remainder reaches 0 prematurely or stops decreasing. We implement backtracking with small offsets around $\lceil y/r\rceil$, coupled with a targeted parity heuristic:
 
-**Algorithm 2: InverseMod with Backtracking**
-
 **Mathematical Description:**
 
 The enhanced algorithm uses depth-first search with backtracking to explore different multiplier choices when the basic algorithm fails. For a given state $(r_i, d)$ where $d$ is the current depth:
@@ -220,8 +220,6 @@ function findKByBinarySearch(remainder, modulus) {
 
 ### 5.1 Happy Path Scenario
 
-**Algorithm 3: Happy Path Implementation**
-
 **Mathematical Description:**
 
 This scenario tests cases where the basic InverseMod algorithm succeeds without requiring backtracking. For each test case $(x, y, z_{\text{expected}})$:
@@ -268,8 +266,6 @@ function happyPathScenario() {
 ```
 
 ### 5.2 No Inverse Scenario
-
-**Algorithm 4: No Inverse Detection**
 
 **Mathematical Description:**
 
@@ -322,8 +318,6 @@ function noInverseScenario() {
 ```
 
 ### 5.3 Early Zero Scenario
-
-**Algorithm 5: Early Termination Detection**
 
 **Mathematical Description:**
 
@@ -394,8 +388,6 @@ These approaches target one or more of the following objectives:
 ### 6.1 Constraint Programming Approach
 
 Objective: Formulate the search as a CSP to systematically avoid early-0 and non-decreasing transitions, yielding a complete method within bounded depth.
-
-**Algorithm 6: Constraint-Based InverseMod**
 
 **Mathematical Description:**
 
@@ -538,8 +530,6 @@ Explore a handful of candidate $k$ values in parallel and continue from the bran
 
 ### 7.1 Test Suite
 
-**Algorithm 8: Comprehensive Test Framework**
-
 **Mathematical Description:**
 
 This comprehensive testing framework validates the InverseMod algorithm across multiple categories of test cases. Each category tests different aspects of the mathematical correctness and edge cases.
@@ -602,8 +592,6 @@ function runComprehensiveTests() {
 ```
 
 ### 7.2 Performance Analysis
-
-**Algorithm 9: Performance Benchmarking**
 
 **Mathematical Description:**
 
