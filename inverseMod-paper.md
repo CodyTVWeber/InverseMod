@@ -41,7 +41,7 @@ Our algorithm introduces:
 
 ### 2.1 Algorithm Definition
 
-**Algorithm 1: Basic InverseMod**
+**Basic InverseMod**
 
 **Mathematical Description:**
 
@@ -158,7 +158,7 @@ Representative empirical runs over random coprime pairs show mixed outcomes; suc
 
 The basic algorithm can fail when the remainder reaches 0 prematurely or stops decreasing. We implement backtracking with small offsets around $\lceil y/r\rceil$, coupled with a targeted parity heuristic:
 
-**Algorithm 2: InverseMod with Backtracking**
+**InverseMod with Backtracking**
 
 **Mathematical Description:**
 
@@ -224,7 +224,7 @@ function findKByBinarySearch(remainder, modulus) {
 
 ### 5.1 Happy Path Scenario
 
-**Algorithm 3: Happy Path Implementation**
+**Happy Path Implementation**
 
 **Mathematical Description:**
 
@@ -273,7 +273,7 @@ function happyPathScenario() {
 
 ### 5.2 No Inverse Scenario
 
-**Algorithm 4: No Inverse Detection**
+**No Inverse Detection**
 
 **Mathematical Description:**
 
@@ -327,7 +327,7 @@ function noInverseScenario() {
 
 ### 5.3 Early Zero Scenario
 
-**Algorithm 5: Early Termination Detection**
+**Early Termination Detection**
 
 **Mathematical Description:**
 
@@ -399,7 +399,7 @@ These approaches target one or more of the following objectives:
 
 Objective: Formulate the search as a CSP to systematically avoid early-0 and non-decreasing transitions, yielding a complete method within bounded depth.
 
-**Algorithm 6: Constraint-Based InverseMod**
+**Constraint-Based InverseMod**
 
 **Mathematical Description:**
 
@@ -542,7 +542,7 @@ Explore a handful of candidate $k$ values in parallel and continue from the bran
 
 ### 7.1 Test Suite
 
-**Algorithm 8: Comprehensive Test Framework**
+**Comprehensive Test Framework**
 
 **Mathematical Description:**
 
@@ -607,7 +607,7 @@ function runComprehensiveTests() {
 
 ### 7.2 Performance Analysis
 
-**Algorithm 9: Performance Benchmarking**
+**Performance Benchmarking**
 
 **Mathematical Description:**
 
