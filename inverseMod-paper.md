@@ -1,12 +1,8 @@
-# A Novel Forward-Iterative Algorithm for Computing Modular Multiplicative Inverses
-
-**Cody Weber**  
-*Independent Researcher*  
-*August 2025*
+# InverseMod: Glorifying God through Math
 
 ## Abstract
 
-We present a forward-iterative heuristic for computing modular multiplicative inverses. The method constructs the inverse, when it succeeds, as a product of multipliers selected around a bounded multiplication constraint. We provide practical implementations with depth-limited search and pruning heuristics (including a parity-aware backtracking rule), together with empirical evaluation. Independent assessments highlight the algorithm’s novelty and suggest an average-case behavior consistent with O(log y) iterations; we treat this as a conjecture supported by evidence rather than a proven bound. Completeness is not guaranteed under fixed search limits; a hybrid fallback to the Extended Euclidean algorithm ensures correctness when desired.
+We humbly present an algorithm that we hope to advance the study of Mathematics and give credit to God for all success. We present a forward-iterative heuristic for computing modular multiplicative inverses. The method constructs the inverse, when it succeeds, as a product of multipliers selected around a bounded multiplication constraint. We provide practical implementations with depth-limited search and pruning heuristics (including a parity-aware backtracking rule), together with empirical evaluation. Independent assessments highlight the algorithm’s novelty and suggest an average-case behavior consistent with O(log y) iterations; we treat this as a conjecture supported by evidence rather than a proven bound. Completeness is not guaranteed under fixed search limits; a hybrid fallback to the Extended Euclidean algorithm ensures correctness when desired.
 
 **Keywords:** modular arithmetic, multiplicative inverse, forward-iterative algorithm, computational number theory, backtracking, continued fractions, Stern–Brocot, heuristics
 
@@ -893,3 +889,8 @@ Independent analyses corroborate the approach’s novelty and provide evidence f
 3. Binary GCD Algorithms
 4. Constraint Programming and SAT Solvers
 5. Dynamic Programming Optimization
+
+## Author
+
+**Cody Weber**  
+*Independent Researcher* 
