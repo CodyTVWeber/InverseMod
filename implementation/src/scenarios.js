@@ -35,6 +35,15 @@ function happyPathScenario() {
             const verification = (result.inverse * BigInt(x)) % BigInt(y);
             console.log(`Verification: (${result.inverse} * ${x}) mod ${y} = ${verification}`);
             console.log(`Backtracks used: ${result.backtrackCount}`);
+            if (typeof result.forwardAttempts !== 'undefined') {
+                console.log(`Forward attempts: ${result.forwardAttempts}`);
+            }
+            if (typeof result.euclidIterations !== 'undefined') {
+                console.log(`Euclid iterations: ${result.euclidIterations}`);
+            }
+            if (Array.isArray(result.methodTimeline)) {
+                console.log(`Method timeline: ${JSON.stringify(result.methodTimeline)}`);
+            }
         }
     });
 }
@@ -163,6 +172,15 @@ function largeNumbersScenario() {
         console.log(`Result: ${result.success ? '✓' : '✗'}, Time: ${(endTime - startTime).toFixed(3)}ms`);
         if (result.success) {
             console.log(`Inverse: ${result.inverse}, Steps: ${result.steps}, Backtracks: ${result.backtrackCount}`);
+            if (typeof result.forwardAttempts !== 'undefined') {
+                console.log(`Forward attempts: ${result.forwardAttempts}`);
+            }
+            if (typeof result.euclidIterations !== 'undefined') {
+                console.log(`Euclid iterations: ${result.euclidIterations}`);
+            }
+            if (Array.isArray(result.methodTimeline)) {
+                console.log(`Method timeline: ${JSON.stringify(result.methodTimeline)}`);
+            }
         }
     });
 }
