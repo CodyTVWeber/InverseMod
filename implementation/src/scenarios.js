@@ -3,6 +3,9 @@
  * Testing different cases: happy path, no inverse, early zero, etc.
  */
 
+// High-resolution timers for Node.js
+const { performance } = require('perf_hooks');
+
 const { ImprovedBacktracker } = require('./improved-backtracking');
 
 /**

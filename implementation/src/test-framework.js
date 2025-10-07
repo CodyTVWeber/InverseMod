@@ -3,6 +3,9 @@
  * Includes performance testing, correctness verification, and statistical analysis
  */
 
+// High-resolution timers for Node.js
+const { performance } = require('perf_hooks');
+
 const { ImprovedBacktracker } = require('./improved-backtracking');
 const {
     happyPathScenario,
