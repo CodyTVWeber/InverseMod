@@ -41,8 +41,6 @@ Our algorithm introduces:
 
 ### 2.1 Algorithm Definition
 
-**Basic InverseMod**
-
 **Mathematical Description:**
 
 Given coprime integers $x, y \in \mathbb{Z}^+$ with $\gcd(x, y) = 1$, the algorithm constructs a sequence of remainders $r_0, r_1, \dots, r_n$ and multipliers $k_1, k_2, \dots, k_n$ such that:
@@ -158,8 +156,6 @@ Representative empirical runs over random coprime pairs show mixed outcomes; suc
 
 The basic algorithm can fail when the remainder reaches 0 prematurely or stops decreasing. We implement backtracking with small offsets around $\lceil y/r\rceil$, coupled with a targeted parity heuristic:
 
-**InverseMod with Backtracking**
-
 **Mathematical Description:**
 
 The enhanced algorithm uses depth-first search with backtracking to explore different multiplier choices when the basic algorithm fails. For a given state $(r_i, d)$ where $d$ is the current depth:
@@ -224,8 +220,6 @@ function findKByBinarySearch(remainder, modulus) {
 
 ### 5.1 Happy Path Scenario
 
-**Happy Path Implementation**
-
 **Mathematical Description:**
 
 This scenario tests cases where the basic InverseMod algorithm succeeds without requiring backtracking. For each test case $(x, y, z_{\text{expected}})$:
@@ -272,8 +266,6 @@ function happyPathScenario() {
 ```
 
 ### 5.2 No Inverse Scenario
-
-**No Inverse Detection**
 
 **Mathematical Description:**
 
@@ -326,8 +318,6 @@ function noInverseScenario() {
 ```
 
 ### 5.3 Early Zero Scenario
-
-**Early Termination Detection**
 
 **Mathematical Description:**
 
@@ -398,8 +388,6 @@ These approaches target one or more of the following objectives:
 ### 6.1 Constraint Programming Approach
 
 Objective: Formulate the search as a CSP to systematically avoid early-0 and non-decreasing transitions, yielding a complete method within bounded depth.
-
-**Constraint-Based InverseMod**
 
 **Mathematical Description:**
 
@@ -542,8 +530,6 @@ Explore a handful of candidate $k$ values in parallel and continue from the bran
 
 ### 7.1 Test Suite
 
-**Comprehensive Test Framework**
-
 **Mathematical Description:**
 
 This comprehensive testing framework validates the InverseMod algorithm across multiple categories of test cases. Each category tests different aspects of the mathematical correctness and edge cases.
@@ -606,8 +592,6 @@ function runComprehensiveTests() {
 ```
 
 ### 7.2 Performance Analysis
-
-**Performance Benchmarking**
 
 **Mathematical Description:**
 
