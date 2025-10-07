@@ -457,7 +457,15 @@ function earlyZeroScenario() {
 
 ## 6. Alternative Approaches
 
+These approaches target one or more of the following objectives:
+- Avoid early-0 failures and non-decreasing remainders (robustness)
+- Reduce time spent choosing $k$ (performance)
+- Improve success rate under finite limits (reliability)
+- Provide guaranteed correctness via fallback (completeness)
+
 ### 6.1 Constraint Programming Approach
+
+Objective: Formulate the search as a CSP to systematically avoid early-0 and non-decreasing transitions, yielding a complete method within bounded depth.
 
 **Algorithm 6: Constraint-Based InverseMod**
 
@@ -512,19 +520,89 @@ function inverseModConstraint(x, y) {
 ```
 
 ### 6.2 Dynamic Programming Approach
+
+Objective: Compute reachability to remainder 1 (and a shortest path) within a bounded depth, explicitly exploring all admissible $k$ that satisfy the band constraint to avoid early-0 traps.
+
+Idea: Treat remainders as nodes and admissible transitions as edges. Use BFS/DP over depths to find the minimum-step path from $r_0 = x \bmod y$ to 1, with parents to reconstruct the $k$-sequence.
+
+Admissible $k$ per step: \(k \in [\lceil y/r \rceil,\ \lfloor (r+y-1)/r \rfloor]\), ensuring \(y < r\cdot k < r+y\) and thus \(r' = (r\cdot k) \bmod y = r\cdot k - y \in (0, r)\).
+
+```javascript
+// Dynamic programming/BFS approach for inverse computation
+function inverseModDP(x, y, maxDepth = 64) {
+  // Preconditions
+  if (!Number.isInteger(x) || !Number.isInteger(y) || x <= 0 || y <= 0) {
+    return { success: false, message: "Invalid inputs" };
+  }
+  // gcd check
+  function gcd(a, b) { while (b !== 0) { const t = b; b = a % b; a = t; } return a; }
+  if (gcd(x, y) !== 1) {
+    return { success: false, message: `No inverse: gcd(${x},${y})≠1` };
+  }
+  const start = x % y;
+  if (start === 1) return { success: true, inverse: 1, steps: 0, multipliers: [] };
+
+  const queue = [start];
+  const depth = new Map([[start, 0]]);
+  const parent = new Map(); // parent.set(rNext, { rPrev, k })
+
+  while (queue.length) {
+    const r = queue.shift();
+    const d = depth.get(r);
+    if (d >= maxDepth) continue;
+
+    const kLow = Math.ceil(y / r);
+    const kHigh = Math.floor((r + y - 1) / r);
+    for (let k = kLow; k <= kHigh; k++) {
+      const rNext = (r * k) % y; // equals r*k - y in this band
+      if (rNext <= 0 || rNext >= r) continue; // enforce strict decrease, avoid 0
+      if (!depth.has(rNext)) {
+        depth.set(rNext, d + 1);
+        parent.set(rNext, { rPrev: r, k });
+        if (rNext === 1) {
+          // Reconstruct multipliers
+          const multipliers = [];
+          let cur = 1;
+          while (cur !== start) {
+            const { rPrev, k } = parent.get(cur);
+            multipliers.push(k);
+            cur = rPrev;
+          }
+          multipliers.reverse();
+          // Compute inverse as product of k's mod y
+          let inverse = 1;
+          for (const m of multipliers) inverse = (inverse * m) % y;
+          return { success: true, inverse, steps: multipliers.length, multipliers };
+        }
+        queue.push(rNext);
+      }
+    }
+  }
+
+  return { success: false, message: `No path to 1 within depth ${maxDepth}` };
+}
+```
 ### 6.3 Heuristic k-Selection
+
+Objective: Speed up $k$-selection and reduce backtracking by preferring candidates that minimize the next remainder or respect parity heuristics.
 
 Small, fixed neighborhoods around $\lceil y/r\rceil$ can be scored (e.g., minimize next remainder, parity alignment) and the best candidate chosen. This often improves convergence with negligible overhead.
 
 ### 6.4 Hybrid with Extended Euclidean
 
+Objective: Guarantee correctness by falling back to Extended Euclidean when the heuristic search fails or times out.
+
 Try the forward-iterative method first; on failure or timeout, fall back to the Extended Euclidean algorithm for a guaranteed inverse. This preserves the pedagogical benefits while ensuring total correctness.
 
 ### 6.5 Memoization and Cycle Control
 
+Objective: Avoid revisiting known-dead remainders at given depths and improve amortized performance across repeated runs.
+
 Cache failing remainders at given depths and add simple cycle detection to prevent revisiting non-productive states. Practical memory grows with the explored frontier (typically $O(\log y)$).
 
 ### 6.6 Parallel Exploration
+
+Objective: Improve wall-clock latency by exploring several promising $k$ branches concurrently and continuing from the best.
 
 Explore a handful of candidate $k$ values in parallel and continue from the branch with smallest next remainder; useful when latency is critical or hardware parallelism is available.
 
