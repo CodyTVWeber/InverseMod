@@ -198,93 +198,21 @@ Example: $x=5$, $y=12$.
 Instead of linear offsets, a bounded binary search over $k\in[\lceil y/r\rceil,\,\lfloor (r+y-1)/r\rfloor]$ can find a valid $k$ more quickly while enforcing $r_{next}\in(0,r)$ when possible. This typically reduces per-step selection to $O(\log \log y)$ time.
 
 ```javascript
-// Helper function: Calculate GCD
-function gcd(a, b) {
-    a = Math.abs(a);
-    b = Math.abs(b);
-    while (b !== 0) {
-        const temp = b;
-        b = a % b;
-        a = temp;
+function findKByBinarySearch(remainder, modulus) {
+  let low = Math.ceil(modulus / remainder);
+  let high = Math.floor((remainder + modulus - 1) / remainder);
+  let best = null;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const nextRemainder = (remainder * mid) % modulus; // in-band: remainder*mid - modulus
+    if (nextRemainder > 0 && nextRemainder < remainder) {
+      best = mid;
+      high = mid - 1; // prefer smaller k
+    } else {
+      low = mid + 1;
     }
-    return a;
-}
-
-// Enhanced InverseMod with backtracking
-function inverseMod(x, y, options = {}) {
-    const maxDepth = options.maxDepth || 64;
-    const maxBacktracks = options.maxBacktracks || 10;
-    const multiplierOffsets = options.multiplierOffsets || [0, 1, 2, 3];
-
-    // Input validation
-    if (!Number.isInteger(x) || !Number.isInteger(y) || x <= 0 || y <= 0) {
-        return { success: false, inverse: 0, message: "Invalid inputs" };
-    }
-
-    if (gcd(x, y) !== 1) {
-        return { success: false, inverse: 0, message: `No inverse exists: gcd(${x}, ${y}) ≠ 1` };
-    }
-
-    // Normalize x
-    x = x % y;
-    if (x === 1) {
-        return { success: true, inverse: 1, message: "Direct solution: x = 1", steps: 0, backtrackCount: 0 };
-    }
-
-    let backtrackCount = 0;
-
-    // Depth-first search with backtracking
-    function dfs(remainder, depth, multipliers) {
-        if (depth > maxDepth) return null;
-        if (remainder === 1) return multipliers;
-        if (remainder === 0) return null;
-
-        const baseK = Math.ceil(y / remainder);
-
-        for (const offset of multiplierOffsets) {
-            const k = baseK + offset;
-            if (k <= 0) continue;
-
-            const product = remainder * k;
-            const nextRemainder = product % y;
-
-            // Skip non-productive paths
-            if (nextRemainder === 0 && depth < maxDepth - 1) continue;
-            if (nextRemainder >= remainder && nextRemainder !== 1) continue;
-
-            const result = dfs(nextRemainder, depth + 1, [...multipliers, k]);
-
-            if (result) return result;
-
-            if (offset > 0) {
-                backtrackCount++;
-                if (backtrackCount > maxBacktracks) return null;
-            }
-        }
-
-        return null;
-    }
-
-    const multipliers = dfs(x, 0, []);
-
-    if (!multipliers) {
-        return { success: false, inverse: 0, message: "Failed to find inverse" };
-    }
-
-    // Calculate inverse
-    let inverse = 1;
-    for (const k of multipliers) {
-        inverse = (inverse * k) % y;
-    }
-
-    return {
-        success: true,
-        inverse,
-        message: backtrackCount > 0 ? `Found using backtracking` : "Direct solution",
-        multipliers,
-        steps: multipliers.length,
-        backtrackCount
-    };
+  }
+  return best ?? low; // fallback if no strictly-decreasing remainder found
 }
 ```
 
@@ -693,10 +621,10 @@ This benchmarking framework empirically validates the theoretical complexity cla
    - Compute empirical success probabilities
    - Compare against theoretical predictions
 
-3. **Complexity Validation:**
+3. **Complexity investigation (empirical):**
    - Test across different modulus sizes $y$
-   - Verify $O(\log y)$ average-case complexity
-   - Measure constants in complexity bounds
+   - Assess approximate logarithmic growth; treat $O(\log y)$ as a trend pending proof
+   - Measure constants in observed growth
 
 **Test Set Generation:**
 For each size parameter $s$:
