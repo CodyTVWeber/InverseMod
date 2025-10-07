@@ -385,92 +385,169 @@ These approaches target one or more of the following objectives:
 - Improve success rate under finite limits (reliability)
 - Provide guaranteed correctness via fallback (completeness)
 
-### 6.1 Constraint Programming Approach
+### 6.1 Hybrid with Extended Euclidean
 
-Objective: Formulate the search as a CSP to systematically avoid early-0 and non-decreasing transitions, yielding a complete method within bounded depth.
+Objective: Guarantee correctness by falling back to Extended Euclidean when the heuristic search fails or times out.
 
-**Mathematical Description:**
-
-This approach models the inverse computation problem as a constraint satisfaction problem (CSP). The goal is to find values $k_1, k_2, \dots, k_n$ that satisfy the mathematical constraints of the algorithm.
-
-**Constraint Model:**
-**Variables:**
-- $k_i \in \mathbb{N}$ for $i = 1, 2, \dots, n$ (multipliers)
-- $r_0, r_1, \dots, r_n \in \mathbb{Z}$ (remainders)
-
-**Domains:**
-- $k_i$: Natural numbers (typically small values)
-- $r_i$: $\{0, 1, \dots, y-1\}$
-
-**Constraints:**
-1. **Remainder constraints:**
-   $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y \quad \forall i = 0, 1, \dots, n-1$$
-
-2. **Bound constraints:**
-   $$y < (r_i \cdot k_{i+1}) < (r_i + y) \quad \forall i = 0, 1, \dots, n-1$$
-
-3. **Termination constraint:**
-   $$r_n = 1$$
-
-4. **Coprimality constraint:**
-   $$\gcd(r_0, y) = 1$$
-
-**Solution Process:**
-1. Model the problem as a CSP with the above variables and constraints
-2. Use constraint propagation to reduce domains
-3. Apply search algorithms (backtracking, forward checking, etc.) to find solutions
-4. Extract the multiplier sequence from the solution
+Try the forward-iterative method first; on failure or timeout, fall back to the Extended Euclidean algorithm for a guaranteed inverse. This preserves the pedagogical benefits while ensuring total correctness.
 
 ```javascript
-// Constraint programming approach for inverse computation
-function inverseModConstraint(x, y) {
-    // This is a placeholder for constraint programming approach
-    // In a full implementation, this would use a CP solver
-
-    console.log(`Constraint programming approach for ${x} mod ${y}`);
-    console.log("This approach would:");
-    console.log("1. Model k-values as variables with domains");
-    console.log("2. Add constraints: y < (r_i * k_{i+1}) < (r_i + y)");
-    console.log("3. Add constraint: final remainder = 1");
-    console.log("4. Use propagation and search to find solution");
-
-    // Placeholder implementation - would need actual CP solver
-    return { success: false, message: "Constraint programming implementation needed" };
+// Hybrid approach: try forward method, then fall back to Extended Euclid
+function egcd(a, b) {
+  let old_r = a, r = b, old_s = 1, s = 0, old_t = 0, t = 1;
+  while (r !== 0) {
+    const q = Math.floor(old_r / r);
+    [old_r, r] = [r, old_r - q * r];
+    [old_s, s] = [s, old_s - q * s];
+    [old_t, t] = [t, old_t - q * t];
+  }
+  return { g: old_r, x: old_s, y: old_t };
 }
+
+function inverseEuclid(x, y) {
+  const { g, x: inv } = egcd(x, y);
+  if (g !== 1) return { success: false, message: 'No inverse: gcd≠1' };
+  const z = ((inv % y) + y) % y;
+  return { success: true, inverse: z, method: 'euclid' };
+}
+
+function inverseModHybrid(x, y, options = {}) {
+  // If a forward method exists in scope, try it first
+  try {
+    if (typeof inverseMod === 'function') {
+      const primary = inverseMod(x, y, options);
+      if (primary && primary.success) return { ...primary, method: primary.method ?? 'forward' };
+    }
+  } catch (_) {}
+  // Fallback
+  return inverseEuclid(x, y);
+}
+
+// Example usage
+console.log(inverseModHybrid(11, 26)); // => { success: true, inverse: 19, method: 'euclid' } (or 'forward' if available)
 ```
 
-```javascript
-// Example (CP-style search): find multipliers for 11 mod 26 within small depth
-function cpExample11mod26() {
-  const x = 11, y = 26, maxDepth = 3;
+### 6.2 Memoization and Cycle Control
 
-  function dfs(remainder, depth, multipliers) {
-    if (remainder === 1) return multipliers;
-    if (depth >= maxDepth) return null;
+Objective: Avoid revisiting known-dead remainders at given depths and improve amortized performance across repeated runs.
+
+Cache failing remainders at given depths and add simple cycle detection to prevent revisiting non-productive states. Practical memory grows with the explored frontier (typically $O(\log y)$).
+
+```javascript
+// DFS with memoization of failing states to avoid repeats
+function inverseModWithMemo(x, y, maxDepth = 8) {
+  const failed = new Set(); // keys like `${remainder}:${depth}`
+
+  function dfs(remainder, depth, inverse) {
+    if (remainder === 1) return { success: true, inverse };
+    if (depth >= maxDepth) return { success: false };
+    const key = `${remainder}:${depth}`;
+    if (failed.has(key)) return { success: false };
 
     const kLow = Math.ceil(y / remainder);
     const kHigh = Math.floor((remainder + y - 1) / remainder);
     for (let k = kLow; k <= kHigh; k++) {
-      const next = (remainder * k) % y; // band ensures 0 < next < remainder if valid
-      if (next === 0 || next >= remainder) continue;
-      const res = dfs(next, depth + 1, multipliers.concat(k));
-      if (res) return res;
+      const next = (remainder * k) % y;
+      if (next <= 0 || next >= remainder) continue;
+      const res = dfs(next, depth + 1, (inverse * k) % y);
+      if (res.success) return res;
     }
-    return null;
+    failed.add(key);
+    return { success: false };
   }
 
-  const ks = dfs(x % y, 0, []);
-  let inverse = null;
-  if (ks) inverse = ks.reduce((acc, m) => (acc * m) % y, 1);
-  console.log({ multipliers: ks, inverse });
-  return { multipliers: ks, inverse };
+  return dfs(x % y, 0, 1);
 }
 
-// Usage
-cpExample11mod26(); // => { multipliers: [5, 9], inverse: 19 }
+// Example usage
+console.log(inverseModWithMemo(11, 26, 4)); // => { success: true, inverse: 19 }
 ```
 
-### 6.2 Dynamic Programming Approach
+### 6.3 Parallel Exploration
+
+Objective: Improve wall-clock latency by exploring several promising $k$ branches concurrently and continuing from the best.
+
+Explore a handful of candidate $k$ values in parallel and continue from the branch with smallest next remainder; useful when latency is critical or hardware parallelism is available.
+
+```javascript
+// Parallel-ish exploration using Promise.all to evaluate candidates concurrently
+async function chooseKParallel(remainder, modulus) {
+  const base = Math.ceil(modulus / remainder);
+  const candidates = [base - 1, base, base + 1, base + 2].filter(k => k >= 1);
+  const evalCandidate = async (k) => {
+    const next = (remainder * k) % modulus;
+    if (next === 0) return { k, score: Infinity };
+    let score = next;
+    if (modulus % 2 === 0 && next % 2 === 1) score -= 0.5;
+    return { k, score, next };
+  };
+  const results = await Promise.all(candidates.map(evalCandidate));
+  results.sort((a, b) => a.score - b.score);
+  return results[0].k;
+}
+
+async function inverseModParallel(x, y, maxSteps = 12) {
+  let r = x % y;
+  let inverse = 1;
+  for (let i = 0; i < maxSteps && r > 1; i++) {
+    const k = await chooseKParallel(r, y);
+    const next = (r * k) % y;
+    if (next === 0) return { success: false, message: 'Early zero' };
+    r = next;
+    inverse = (inverse * k) % y;
+  }
+  return r === 1 ? { success: true, inverse } : { success: false, message: 'Max steps' };
+}
+
+// Example usage
+inverseModParallel(11, 26).then(console.log); // => { success: true, inverse: 19 }
+```
+
+### 6.4 Heuristic k-Selection
+
+Objective: Speed up $k$-selection and reduce backtracking by preferring candidates that minimize the next remainder or respect parity heuristics.
+
+Small, fixed neighborhoods around $\lceil y/r\rceil$ can be scored (e.g., minimize next remainder, parity alignment) and the best candidate chosen. This often improves convergence with negligible overhead.
+
+```javascript
+// Heuristic k-selection: score candidates near ceil(y/r)
+function selectKHeuristic(remainder, modulus) {
+  const base = Math.ceil(modulus / remainder);
+  const candidates = [base - 1, base, base + 1, base + 2].filter(k => k >= 1);
+  let bestK = candidates[0];
+  let bestScore = Infinity;
+  for (const k of candidates) {
+    const next = (remainder * k) % modulus;
+    if (next === 0) continue; // avoid early zero
+    let score = next; // prefer smaller remainder
+    if (modulus % 2 === 0 && next % 2 === 1) score -= 0.5; // parity tie-breaker
+    if (score < bestScore) {
+      bestScore = score;
+      bestK = k;
+    }
+  }
+  return bestK;
+}
+
+function inverseModHeuristic(x, y, maxSteps = 16) {
+  let r = x % y;
+  if (r === 1) return { success: true, inverse: 1, steps: 0 };
+  let inverse = 1;
+  for (let i = 0; i < maxSteps && r > 1; i++) {
+    const k = selectKHeuristic(r, y);
+    const next = (r * k) % y;
+    if (next === 0) return { success: false, message: 'Heuristic hit zero' };
+    r = next;
+    inverse = (inverse * k) % y;
+  }
+  return r === 1 ? { success: true, inverse } : { success: false, message: 'Heuristic max steps' };
+}
+
+// Example usage
+console.log(inverseModHeuristic(11, 26)); // => { success: true, inverse: 19 }
+```
+
+### 6.5 Dynamic Programming Approach
 
 Objective: Compute reachability to remainder 1 (and a shortest path) within a bounded depth, explicitly exploring all admissible $k$ that satisfy the band constraint to avoid early-0 traps.
 
@@ -483,7 +560,7 @@ Admissible $k$ per step: \(k \in [\lceil y/r \rceil,\ \lfloor (r+y-1)/r \rfloor]
 function inverseModDP(x, y, maxDepth = 64) {
   // Preconditions
   if (!Number.isInteger(x) || !Number.isInteger(y) || x <= 0 || y <= 0) {
-    return { success: false, message: "Invalid inputs" };
+    return { success: false, message: 'Invalid inputs' };
   }
   // gcd check
   function gcd(a, b) { while (b !== 0) { const t = b; b = a % b; a = t; } return a; }
@@ -537,166 +614,90 @@ function inverseModDP(x, y, maxDepth = 64) {
 // Example usage
 console.log(inverseModDP(11, 26, 8)); // => { success: true, inverse: 19, ... }
 ```
-### 6.3 Heuristic k-Selection
 
-Objective: Speed up $k$-selection and reduce backtracking by preferring candidates that minimize the next remainder or respect parity heuristics.
+### 6.6 Constraint Programming Approach
 
-Small, fixed neighborhoods around $\lceil y/r\rceil$ can be scored (e.g., minimize next remainder, parity alignment) and the best candidate chosen. This often improves convergence with negligible overhead.
+Objective: Formulate the search as a CSP to systematically avoid early-0 and non-decreasing transitions, yielding a complete method within bounded depth.
+
+**Mathematical Description:**
+
+This approach models the inverse computation problem as a constraint satisfaction problem (CSP). The goal is to find values $k_1, k_2, \dots, k_n$ that satisfy the mathematical constraints of the algorithm.
+
+**Constraint Model:**
+**Variables:**
+- $k_i \in \mathbb{N}$ for $i = 1, 2, \dots, n$ (multipliers)
+- $r_0, r_1, \dots, r_n \in \mathbb{Z}$ (remainders)
+
+**Domains:**
+- $k_i$: Natural numbers (typically small values)
+- $r_i$: $\{0, 1, \dots, y-1\}$
+
+**Constraints:**
+1. **Remainder constraints:**
+   $$r_{i+1} = (r_i \cdot k_{i+1}) \mod y \quad \forall i = 0, 1, \dots, n-1$$
+
+2. **Bound constraints:**
+   $$y < (r_i \cdot k_{i+1}) < (r_i + y) \quad \forall i = 0, 1, \dots, n-1$$
+
+3. **Termination constraint:**
+   $$r_n = 1$$
+
+4. **Coprimality constraint:**
+   $$\gcd(r_0, y) = 1$$
+
+**Solution Process:**
+1. Model the problem as a CSP with the above variables and constraints
+2. Use constraint propagation to reduce domains
+3. Apply search algorithms (backtracking, forward checking, etc.) to find solutions
+4. Extract the multiplier sequence from the solution
 
 ```javascript
-// Heuristic k-selection: score candidates near ceil(y/r)
-function selectKHeuristic(remainder, modulus) {
-  const base = Math.ceil(modulus / remainder);
-  const candidates = [base - 1, base, base + 1, base + 2].filter(k => k >= 1);
-  let bestK = candidates[0];
-  let bestScore = Infinity;
-  for (const k of candidates) {
-    const next = (remainder * k) % modulus;
-    if (next === 0) continue; // avoid early zero
-    let score = next; // prefer smaller remainder
-    if (modulus % 2 === 0 && next % 2 === 1) score -= 0.5; // parity tie-breaker
-    if (score < bestScore) {
-      bestScore = score;
-      bestK = k;
-    }
-  }
-  return bestK;
-}
+// Constraint programming approach for inverse computation
+function inverseModConstraint(x, y) {
+    // This is a placeholder for constraint programming approach
+    // In a full implementation, this would use a CP solver
 
-function inverseModHeuristic(x, y, maxSteps = 16) {
-  let r = x % y;
-  if (r === 1) return { success: true, inverse: 1, steps: 0 };
-  let inverse = 1;
-  for (let i = 0; i < maxSteps && r > 1; i++) {
-    const k = selectKHeuristic(r, y);
-    const next = (r * k) % y;
-    if (next === 0) return { success: false, message: 'Heuristic hit zero' };
-    r = next;
-    inverse = (inverse * k) % y;
-  }
-  return r === 1 ? { success: true, inverse } : { success: false, message: 'Heuristic max steps' };
-}
+    console.log(`Constraint programming approach for ${x} mod ${y}`);
+    console.log("This approach would:");
+    console.log("1. Model k-values as variables with domains");
+    console.log("2. Add constraints: y < (r_i * k_{i+1}) < (r_i + y)");
+    console.log("3. Add constraint: final remainder = 1");
+    console.log("4. Use propagation and search to find solution");
 
-// Example usage
-console.log(inverseModHeuristic(11, 26)); // => { success: true, inverse: 19 }
+    // Placeholder implementation - would need actual CP solver
+    return { success: false, message: 'Constraint programming implementation needed' };
+}
 ```
 
-### 6.4 Hybrid with Extended Euclidean
-
-Objective: Guarantee correctness by falling back to Extended Euclidean when the heuristic search fails or times out.
-
-Try the forward-iterative method first; on failure or timeout, fall back to the Extended Euclidean algorithm for a guaranteed inverse. This preserves the pedagogical benefits while ensuring total correctness.
-
 ```javascript
-// Hybrid approach: try forward method, then fall back to Extended Euclid
-function egcd(a, b) {
-  let old_r = a, r = b, old_s = 1, s = 0, old_t = 0, t = 1;
-  while (r !== 0) {
-    const q = Math.floor(old_r / r);
-    [old_r, r] = [r, old_r - q * r];
-    [old_s, s] = [s, old_s - q * s];
-    [old_t, t] = [t, old_t - q * t];
-  }
-  return { g: old_r, x: old_s, y: old_t };
-}
+// Example (CP-style search): find multipliers for 11 mod 26 within small depth
+function cpExample11mod26() {
+  const x = 11, y = 26, maxDepth = 3;
 
-function inverseEuclid(x, y) {
-  const { g, x: inv } = egcd(x, y);
-  if (g !== 1) return { success: false, message: 'No inverse: gcd≠1' };
-  const z = ((inv % y) + y) % y;
-  return { success: true, inverse: z, method: 'euclid' };
-}
-
-function inverseModHybrid(x, y, options = {}) {
-  // If a forward method exists in scope, try it first
-  try {
-    if (typeof inverseMod === 'function') {
-      const primary = inverseMod(x, y, options);
-      if (primary && primary.success) return { ...primary, method: primary.method ?? 'forward' };
-    }
-  } catch (_) {}
-  // Fallback
-  return inverseEuclid(x, y);
-}
-
-// Example usage
-console.log(inverseModHybrid(11, 26)); // => { success: true, inverse: 19, method: 'euclid' } (or 'forward' if available)
-```
-
-### 6.5 Memoization and Cycle Control
-
-Objective: Avoid revisiting known-dead remainders at given depths and improve amortized performance across repeated runs.
-
-Cache failing remainders at given depths and add simple cycle detection to prevent revisiting non-productive states. Practical memory grows with the explored frontier (typically $O(\log y)$).
-
-```javascript
-// DFS with memoization of failing states to avoid repeats
-function inverseModWithMemo(x, y, maxDepth = 8) {
-  const failed = new Set(); // keys like `${remainder}:${depth}`
-
-  function dfs(remainder, depth, inverse) {
-    if (remainder === 1) return { success: true, inverse };
-    if (depth >= maxDepth) return { success: false };
-    const key = `${remainder}:${depth}`;
-    if (failed.has(key)) return { success: false };
+  function dfs(remainder, depth, multipliers) {
+    if (remainder === 1) return multipliers;
+    if (depth >= maxDepth) return null;
 
     const kLow = Math.ceil(y / remainder);
     const kHigh = Math.floor((remainder + y - 1) / remainder);
     for (let k = kLow; k <= kHigh; k++) {
-      const next = (remainder * k) % y;
-      if (next <= 0 || next >= remainder) continue;
-      const res = dfs(next, depth + 1, (inverse * k) % y);
-      if (res.success) return res;
+      const next = (remainder * k) % y; // band ensures 0 < next < remainder if valid
+      if (next === 0 || next >= remainder) continue;
+      const res = dfs(next, depth + 1, multipliers.concat(k));
+      if (res) return res;
     }
-    failed.add(key);
-    return { success: false };
+    return null;
   }
 
-  return dfs(x % y, 0, 1);
+  const ks = dfs(x % y, 0, []);
+  let inverse = null;
+  if (ks) inverse = ks.reduce((acc, m) => (acc * m) % y, 1);
+  console.log({ multipliers: ks, inverse });
+  return { multipliers: ks, inverse };
 }
 
-// Example usage
-console.log(inverseModWithMemo(11, 26, 4)); // => { success: true, inverse: 19 }
-```
-
-### 6.6 Parallel Exploration
-
-Objective: Improve wall-clock latency by exploring several promising $k$ branches concurrently and continuing from the best.
-
-Explore a handful of candidate $k$ values in parallel and continue from the branch with smallest next remainder; useful when latency is critical or hardware parallelism is available.
-
-```javascript
-// Parallel-ish exploration using Promise.all to evaluate candidates concurrently
-async function chooseKParallel(remainder, modulus) {
-  const base = Math.ceil(modulus / remainder);
-  const candidates = [base - 1, base, base + 1, base + 2].filter(k => k >= 1);
-  const evalCandidate = async (k) => {
-    const next = (remainder * k) % modulus;
-    if (next === 0) return { k, score: Infinity };
-    let score = next;
-    if (modulus % 2 === 0 && next % 2 === 1) score -= 0.5;
-    return { k, score, next };
-  };
-  const results = await Promise.all(candidates.map(evalCandidate));
-  results.sort((a, b) => a.score - b.score);
-  return results[0].k;
-}
-
-async function inverseModParallel(x, y, maxSteps = 12) {
-  let r = x % y;
-  let inverse = 1;
-  for (let i = 0; i < maxSteps && r > 1; i++) {
-    const k = await chooseKParallel(r, y);
-    const next = (r * k) % y;
-    if (next === 0) return { success: false, message: 'Early zero' };
-    r = next;
-    inverse = (inverse * k) % y;
-  }
-  return r === 1 ? { success: true, inverse } : { success: false, message: 'Max steps' };
-}
-
-// Example usage
-inverseModParallel(11, 26).then(console.log); // => { success: true, inverse: 19 }
+// Usage
+cpExample11mod26(); // => { multipliers: [5, 9], inverse: 19 }
 ```
 
 ## 7. Comprehensive Testing Framework
