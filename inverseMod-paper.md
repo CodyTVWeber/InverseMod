@@ -114,7 +114,7 @@ function inverseModBasic(x, y) {
 console.log("=== Basic Algorithm Tests ===");
 inverseModBasic(3, 7);    // Should work
 console.log("\n");
-inverseModBasic(5, 12);   // Will fail without backtracking
+inverseModBasic(11, 26);   // Will fail without backtracking
 ```
 
 **Input**: Coprime integers $x, y \in \mathbb{Z}^+$  
@@ -187,11 +187,11 @@ For each state $(r_i, d, M_i)$:
 
 ### 4.2 Parity-Based Heuristic (Illustrative)
 
-For even modulus $y$ and even remainder $r$, any $r\cdot k$ is divisible by 2, making $r_{next}=0$ likely. If the multiplier sequence contains an odd factor, incrementing the earliest odd $k$ by 2 can change the parity trajectory and avoid $0$.
+For even modulus $y$ and trajectories that hit $r_{next}=0$, incrementing the earliest odd multiplier by 2 can change the parity flow and avoid zero.
 
-Example: $x=5$, $y=12$.
-- Greedy: $k_1=3 \Rightarrow r_1=3$; next $k_2=4$ yields $r_2=0$ (failure)
-- Heuristic: backtrack and try $k_1=5$ (odd increment) $\Rightarrow r_1 = 1$ (success), so $z\equiv5$.
+Example: $x=11$, $y=26$.
+- Greedy: $k_1=3 \Rightarrow r_1=7$; next $k_2=4 \Rightarrow r_2=2$; next $k_3=13 \Rightarrow r_3=0$ (failure)
+- Heuristic: backtrack and increment the earliest odd $k$ by 2: try $k_1=5$ $\Rightarrow r_1=3$; then $k_2=9$ $\Rightarrow r_2=1$ (success), so $z\equiv (5\times9)\equiv19$.
 
 ### 4.3 Optimized k-Selection (Binary Search)
 
@@ -352,7 +352,7 @@ function earlyZeroScenario() {
     console.log("Testing cases that fail with basic algorithm but work with backtracking:");
 
     const testCases = [
-        [5, 12, 5],   // 5 * 5 = 25 ≡ 1 mod 12 (requires backtracking)
+        [11, 26, 19], // 11 * 19 = 209 ≡ 1 mod 26 (requires backtracking)
         [7, 15, 13],  // 7 * 13 = 91 ≡ 1 mod 15 (may require backtracking)
         [11, 18, 5],  // 11 * 5 = 55 ≡ 1 mod 18 (may require backtracking)
         [13, 21, 13]  // 13 * 13 = 169 ≡ 1 mod 21 (may require backtracking)
@@ -576,7 +576,7 @@ function runComprehensiveTests() {
     const categories = [
         { name: "Happy Path", tests: [[3,7],[8,5],[7,11],[6,7],[17,23]] },
         { name: "No Inverse", tests: [[4,6],[2,4],[9,15],[8,12],[15,25]] },
-        { name: "Early Zero", tests: [[5,12],[7,15],[11,18],[13,21],[19,27]] },
+        { name: "Early Zero", tests: [[11,26],[7,15],[11,18],[13,21],[19,27]] },
         { name: "Edge Cases", tests: [[1,7],[1,13],[2,5],[3,5],[4,7]] },
         { name: "Large Numbers", tests: [[12345,67890],[98765,43210],[11111,22222]] }
     ];
