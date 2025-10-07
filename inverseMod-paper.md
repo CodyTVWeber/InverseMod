@@ -120,6 +120,15 @@ inverseModBasic(11, 26);   // Will fail without backtracking
 
 Remark 2.1 (Heuristic nature). We do not assert that for every coprime pair $(x,y)$ there exists a sequence of multipliers satisfying the above bound and transitions that reaches $r_n=1$. Our implementation uses a limited search over candidates $k$ at each step and stops on failure. With unbounded backtracking the search space is finite at each depth; formal completeness and complexity remain open.
 
+Step-by-step trace (CLI):
+
+```bash
+# Show each step and remainders for a happy-path example
+node implementation/src/show-steps.js 17 23
+# or
+npm run steps -- 17 23
+```
+
 ### 2.3 Connections and Intuition
 
 - **Continued fractions**: The base multiplier $\lceil y/r_i \rceil$ plays a role analogous to a quotient in Euclidean/continued-fraction expansions.
@@ -234,6 +243,12 @@ Example: $x=11$, $y=26$.
 - Greedy: $k_1=3 \Rightarrow r_1=7$; next $k_2=4 \Rightarrow r_2=2$; next $k_3=13 \Rightarrow r_3=0$ (failure)
 - Heuristic: backtrack and increment the earliest odd $k$ by 2: try $k_1=5$ $\Rightarrow r_1=3$; then $k_2=9$ $\Rightarrow r_2=1$ (success), so $z\equiv (5\times9)\equiv19$.
 
+Reproduce the full step-by-step with backtracking events:
+
+```bash
+node implementation/src/show-steps.js 11 26
+```
+
 ### 4.3 Optimized k-Selection (Binary Search)
 
 Instead of linear offsets, a bounded binary search over $k\in[\lceil y/r\rceil,\,\lfloor (r+y-1)/r\rfloor]$ can find a valid $k$ more quickly while enforcing $r_{next}\in(0,r)$ when possible. This typically reduces per-step selection to $O(\log \log y)$ time.
@@ -312,6 +327,13 @@ One-line reproduction:
 node implementation/src/test-framework.js --scenarios
 ```
 
+Step-by-step trace (CLI):
+
+```bash
+# Inspect a direct solution without backtracking
+node implementation/src/show-steps.js 17 23
+```
+
 ### 5.2 No Inverse Scenario
 
 **Mathematical Description:**
@@ -368,6 +390,13 @@ One-line reproduction:
 
 ```bash
 node implementation/src/test-framework.js --scenarios
+```
+
+Optional step-by-step (no inverse):
+
+```bash
+# Observe detection of gcd > 1
+node implementation/src/show-steps.js 4 6
 ```
 
 ### 5.3 Early Zero Scenario
@@ -434,6 +463,14 @@ One-line reproduction:
 
 ```bash
 node implementation/src/test-framework.js --scenarios
+```
+
+Step-by-step trace with backtracking (CLI):
+
+```bash
+# Canonical early-zero + parity-backtrack cases
+node implementation/src/show-steps.js 11 26
+node implementation/src/show-steps.js 5 12
 ```
 
 ## 6. Proposed Improvements
@@ -939,7 +976,7 @@ Empirical success rates depend on search parameters (offsets, depth, backtrack l
 ### 8.3 Concrete Empirical Findings (Selected)
 
 - For `y` in [10, 1000], average successful iteration counts correlate strongly with `log2(y)` per the independent analyzer; worst-case samples remain small multiples of `log2(y)` in our runs.
-- On `11 mod 26`, a successful path is `[5, 9]`, yielding inverse `19` with 2 multipliers; reproduction: `node implementation/src/scenarios.js` (runs all scenarios) or `node implementation/src/test-framework.js --scenarios`.
+- On `11 mod 26`, a successful path is `[5, 9]`, yielding inverse `19` with 2 multipliers; reproduction: `node implementation/src/scenarios.js` (runs all scenarios) or `node implementation/src/test-framework.js --scenarios`. To see the complete step-by-step construction, run: `node implementation/src/show-steps.js 11 26`.
 
 ## 9. Implementation Notes
 
@@ -982,6 +1019,21 @@ Optional demonstration:
 
 ```bash
 node implementation/src/demo.js
+```
+
+Step-by-step tracer (inspect every step and backtracking):
+
+```bash
+# Direct invocation
+node implementation/src/show-steps.js 17 23
+node implementation/src/show-steps.js 11 26
+
+# Via npm script
+npm run steps -- 17 23
+npm run steps -- 11 26
+
+# Tuning search limits for harder cases
+node implementation/src/show-steps.js 999999 1000000 --maxBacktracks=200 --maxNodes=20000
 ```
 
 ## References
