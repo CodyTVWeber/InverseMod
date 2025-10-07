@@ -126,6 +126,43 @@ Remark 2.1 (Heuristic nature). We do not assert that for every coprime pair $(x,
 - **Stern–Brocot and Farey sequences**: The band constraint $y < r\cdot k < r+y$ has a geometric flavor akin to bounded rational approximation.
 - **Group perspective**: Each $k_i$ is a step in the multiplicative group $(\mathbb{Z}/y\mathbb{Z})^\times$, with the product accumulating to $x^{-1}$. 
 
+### 2.4 Reflection Symmetry and Preconditioning (flip to the small side)
+
+Let $m = x \bmod y$ with $0 < m < y$ and $\gcd(m,y)=1$. Hard cases for the forward-iterative search often occur when $m$ is close to $y$. A simple reflection trick moves such cases to the “small side,” improving typical behavior without changing the solution:
+
+- Reflection identity: for all integers $m$,
+  $$(y-1)\,m \equiv -m \equiv y-m \pmod y.$$
+- If $m > y/2$, then $y-m < y/2$; coprimality is preserved since $\gcd(y-m, y) = \gcd(m, y) = 1$.
+
+Two immediate consequences:
+
+- Self-inverse at the top: $m = y-1$ satisfies $(y-1)^2 \equiv 1 \pmod y$, so $(y-1)^{-1} \equiv y-1$.
+- Inverse recovery after reflection: if $u$ satisfies $(y-m)\,u \equiv 1 \pmod y$, then
+  $$m\cdot(-u) \equiv 1 \pmod y \quad\Rightarrow\quad m^{-1} \equiv -u \equiv y-u \pmod y.$$
+  Equivalently,
+  $$\operatorname{inv}(m) \equiv -\operatorname{inv}(y-m) \pmod y.$$
+
+Practical implication: when $m>y/2$, invert $y-m$ instead (which is < $y/2$), then negate the result modulo $y$. This guarantees the working residue is at most $\lfloor (y-1)/2 \rfloor$.
+
+Example. $m=11$, $y=15$: $(y-m)=4<y/2$. Compute $4^{-1}\equiv 4$ mod 15, then $11^{-1}\equiv -4\equiv 11$; indeed $11\cdot 11 \equiv 1$.
+
+```javascript
+// Precondition by reflection, then recover the inverse
+// Preconditions: 0 < m < n, gcd(m, n) = 1
+function inverseWithReflection(m, n, invSmall) {
+  if (m === n - 1) return n - 1; // self-inverse fast path
+  if (m > Math.floor(n / 2)) {
+    const u = invSmall(n - m, n); // invert the smaller residue
+    return (n - u) % n;           // inv(m) ≡ -inv(n-m) (mod n)
+  }
+  return invSmall(m, n);
+}
+```
+
+Edge cases.
+- If $n$ is even and $m=n/2$, no inverse exists (and reflection is unnecessary); this is consistent with $\gcd(n/2,n)>1$.
+- For $m=0$ or $\gcd(m,n)>1$, no inverse exists; reflection preserves coprimality when it holds.
+
 ## 3. Complexity Analysis
 
 ### 3.1 Theoretical Complexity
