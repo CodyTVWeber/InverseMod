@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Demonstration of the InverseMod Algorithm Library
+ * Demonstration of the Forward Method Library
  * Shows basic usage and key features
  */
 
@@ -15,7 +15,7 @@ const {
 } = require('./index');
 
 console.log('='.repeat(60));
-console.log('INVERSEMOD ALGORITHM LIBRARY DEMONSTRATION');
+console.log('FORWARD METHOD LIBRARY DEMONSTRATION');
 console.log('='.repeat(60));
 
 /**

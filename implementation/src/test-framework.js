@@ -1,5 +1,5 @@
 /**
- * Comprehensive Test Framework for InverseMod Algorithm
+ * Comprehensive Test Framework for Forward Method
  * Includes performance testing, correctness verification, and statistical analysis
  */
 

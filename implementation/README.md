@@ -1,10 +1,12 @@
-# InverseMod Algorithm - JavaScript Implementation
+# Forward Iterative Method - JavaScript Implementation
 
-A comprehensive JavaScript implementation of Cody Weber's novel forward-iterative algorithm for computing modular multiplicative inverses, complete with mathematical analysis, testing frameworks, and alternative approaches.
+A comprehensive JavaScript implementation of the forward iterative method for computing modular multiplicative inverses, complete with mathematical analysis, testing frameworks, and alternative approaches.
+
+*To God be the glory for all wisdom and knowledge.*
 
 ## Overview
 
-This library implements a novel algorithm for computing modular multiplicative inverses that:
+This library implements the forward iterative method for computing modular multiplicative inverses that:
 
 - Uses a **forward-iterative approach** starting from the input value
 - Employs a **bounded multiplication constraint** for optimal k-value selection
@@ -237,9 +239,9 @@ The algorithm satisfies several key mathematical properties:
 
 This implementation demonstrates:
 
-- **Novel forward-iterative approach** to modular inverse computation
+- **Forward iterative approach** to modular inverse computation
 - **Parity-based backtracking** for enhanced success rates
-- **Comprehensive mathematical analysis** with complexity proofs
+- **Comprehensive mathematical analysis** with empirical complexity observations
 - **Multiple algorithmic approaches** for solving the same problem
 
 ## License
@@ -251,10 +253,10 @@ MIT License - see LICENSE file for details.
 If you use this work in your research, please cite:
 
 ```
-@misc{weber2025inversemod,
-  title={A Novel Forward-Iterative Algorithm for Computing Modular Multiplicative Inverses},
+@misc{weber2025forwardmethod,
+  title={The Forward Iterative Method for Computing Modular Multiplicative Inverses},
   author={Cody Weber},
   year={2025},
-  note={JavaScript implementation with mathematical analysis}
+  note={JavaScript implementation with mathematical analysis. Soli Deo Gloria}
 }
 ```

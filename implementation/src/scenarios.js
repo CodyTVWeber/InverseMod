@@ -1,5 +1,5 @@
 /**
- * Scenario-based implementations for InverseMod algorithm
+ * Scenario-based implementations for Forward Method
  * Testing different cases: happy path, no inverse, early zero, etc.
  */
 
@@ -238,7 +238,7 @@ function stressTestScenario() {
  * Run all scenarios
  */
 function runAllScenarios() {
-    console.log("Running all InverseMod algorithm scenarios...\n");
+    console.log("Running all Forward Method scenarios...\n");
 
     try {
         happyPathScenario();

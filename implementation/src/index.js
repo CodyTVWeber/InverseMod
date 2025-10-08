@@ -1,6 +1,8 @@
 /**
- * InverseMod Algorithm Library
+ * Forward Method Library
  * Main entry point exporting all functionality
+ * 
+ * To God be the glory for all wisdom and knowledge.
  */
 
 // Core algorithm implementations

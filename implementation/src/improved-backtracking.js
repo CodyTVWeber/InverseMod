@@ -1,5 +1,5 @@
 /**
- * Improved Backtracking Implementation for InverseMod Algorithm
+ * Improved Backtracking Implementation for Forward Method
  * Based on AI analysis of parity-based failure patterns
  *
  * Key Insight: When remainder becomes even and modulus is even,

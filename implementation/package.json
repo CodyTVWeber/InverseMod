@@ -1,7 +1,7 @@
 {
-  "name": "inversemod-algorithm",
+  "name": "forward-method",
   "version": "1.0.0",
-  "description": "Novel forward-iterative algorithm for computing modular multiplicative inverses with JavaScript implementations",
+  "description": "Forward iterative method for computing modular multiplicative inverses with JavaScript implementations",
   "main": "src/index.js",
   "scripts": {
     "test": "node src/test-framework.js --comprehensive",
@@ -31,14 +31,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/inversemod-algorithm.git"
+    "url": "https://github.com/username/forward-method.git"
   },
   "bugs": {
-    "url": "https://github.com/username/inversemod-algorithm/issues"
+    "url": "https://github.com/username/forward-method/issues"
   },
-  "homepage": "https://github.com/username/inversemod-algorithm#readme",
-  "dependencies": {},
-  "devDependencies": {},
+  "homepage": "https://github.com/username/forward-method#readme",
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  },
   "files": [
     "src/",
     "README.md",

@@ -1,11 +1,11 @@
 /**
- * Example usage of the InverseMod algorithm
+ * Example usage of the Forward Method
  * Demonstrates various cases and how to interpret results
  */
 
 import { inverseMod, formatResult, getAlgorithmExplanation } from './inverse-mod';
 
-console.log('InverseMod Algorithm - Example Usage');
+console.log('Forward Method - Example Usage');
 console.log('====================================\n');
 
 // Print algorithm explanation
@@ -117,7 +117,7 @@ Extended Euclidean (for 35 mod 12):
 - 12 = 1(11) + 1
 - Back-substitution gives inverse
 
-InverseMod Algorithm (for 35 mod 12):
+Forward Method (for 35 mod 12):
 - Works forward iteratively
 - Normalizes: 35 ≡ 11 (mod 12)
 - Finds k values with bounded multiplication

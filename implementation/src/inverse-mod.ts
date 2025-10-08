@@ -1,12 +1,14 @@
 /**
- * InverseMod Algorithm - Final TypeScript Implementation
+ * Forward Iterative Method - TypeScript Implementation
  * Original algorithm by Cody Weber (2022)
  * 
- * This implementation includes all improvements discovered through AI analysis:
+ * This implementation includes all improvements discovered through analysis:
  * - Proper GCD pre-validation
  * - Fixed k-value calculation with proper bounds checking
  * - Backtracking support for handling edge cases
  * - Comprehensive type safety
+ * 
+ * To God be the glory for all wisdom and knowledge.
  */
 
 export interface AlgorithmStep {
@@ -123,7 +125,7 @@ export function calculateOptimalK(remainder: number, modulus: number): number {
 }
 
 /**
- * Core InverseMod algorithm with backtracking support
+ * Core forward method algorithm with backtracking support
  */
 export function inverseMod(x: number, y: number, options: BacktrackingOptions = {}): AlgorithmResult {
   // Set default options
@@ -372,8 +374,8 @@ export function inverseMod(x: number, y: number, options: BacktrackingOptions = 
  */
 export function getAlgorithmExplanation(): string {
   return `
-InverseMod Algorithm (Cody Weber, 2022)
-=====================================
+Forward Iterative Method (Cody Weber, 2022)
+============================================
 
 Given: x mod y, find z such that (z × x) mod y = 1
 
@@ -386,13 +388,13 @@ Algorithm Steps:
    - Compute rᵢ₊₁ = (rᵢ × kᵢ₊₁) mod y
 5. When rₙ = 1, compute z = (k₁ × k₂ × ... × kₙ) mod y
 
-Key Improvements:
+Key Features:
 - Pre-validation using GCD check
 - Optimal k-value calculation using ceiling division
 - Backtracking when remainder becomes 0 or stops decreasing
 - Multiple k-value offsets to explore different paths
 
-The algorithm is novel in its forward-iterative approach and bounded multiplication constraint.
+The forward method uses a forward-iterative approach with bounded multiplication constraint.
 `;
 }
 
@@ -402,8 +404,8 @@ The algorithm is novel in its forward-iterative approach and bounded multiplicat
 export function formatResult(result: AlgorithmResult): string {
   const lines: string[] = [];
   
-  lines.push(`InverseMod Algorithm Result`);
-  lines.push(`===========================`);
+  lines.push(`Forward Method Result`);
+  lines.push(`====================`);
   lines.push(`Success: ${result.success}`);
   lines.push(`Method: ${result.method}`);
   
