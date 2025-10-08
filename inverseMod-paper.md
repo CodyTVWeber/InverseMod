@@ -1,15 +1,14 @@
 # The Forward Iterative Method for Modular Multiplicative Inverses
 
-> *"The fear of the Lord is the beginning of knowledge: but fools despise wisdom and instruction."*  
-> — Proverbs 1:7 (KJV)
+> "For the LORD gives wisdom; from his mouth come knowledge and understanding." — Proverbs 2:6
 
 ## Dedication and Motivation
 
-We humbly present this work with the sole purpose of giving glory to God, from whom all wisdom, knowledge, and understanding flow. This research is offered not as a monument to human achievement, but as a humble acknowledgment that every discovery in mathematics and science ultimately points back to the Creator who ordained the very principles we seek to understand.
+This research is offered as a humble acknowledgment that every discovery in mathematics and science ultimately points back to the Creator who set in place the very principles we seek to understand.
 
-The motivation for developing this algorithm is to honor God through the pursuit of wisdom and the careful study of His creation. We recognize that any insight gained or contribution made comes not from our own merit, but by God's grace. It is our prayer that this work may serve others and advance the collective understanding of computational mathematics, all while recognizing the Author of all truth.
+The motivation for developing this algorithm is to honor God through the pursuit of wisdom and the careful study of His creation.
 
-We present these findings with humility, knowing that our understanding is but a small glimpse of the infinite wisdom that belongs to God alone.
+It is our prayer that this work may serve others and advance the collective understanding of mathematics.  Also, we pray the best for you, the one reading this. That your life is going well and this work is a benefit to you.
 
 ## Abstract
 
