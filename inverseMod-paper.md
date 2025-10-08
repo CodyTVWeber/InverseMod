@@ -1,10 +1,21 @@
-# InverseMod: Glorifying God through Math
+# The Forward Iterative Method for Modular Multiplicative Inverses
+
+> *"The fear of the Lord is the beginning of knowledge: but fools despise wisdom and instruction."*  
+> — Proverbs 1:7 (KJV)
+
+## Dedication and Motivation
+
+We humbly present this work with the sole purpose of giving glory to God, from whom all wisdom, knowledge, and understanding flow. This research is offered not as a monument to human achievement, but as a humble acknowledgment that every discovery in mathematics and science ultimately points back to the Creator who ordained the very principles we seek to understand.
+
+The motivation for developing this algorithm is to honor God through the pursuit of wisdom and the careful study of His creation. We recognize that any insight gained or contribution made comes not from our own merit, but by God's grace. It is our prayer that this work may serve others and advance the collective understanding of computational mathematics, all while recognizing the Author of all truth.
+
+We present these findings with humility, knowing that our understanding is but a small glimpse of the infinite wisdom that belongs to God alone.
 
 ## Abstract
 
-We humbly present an algorithm that we hope to advance the study of Mathematics and give credit to God for all success. This algorithm is a forward-iterative heuristic for computing modular multiplicative inverses. The method constructs the inverse, when it succeeds, as a product of multipliers selected around a bounded multiplication constraint. We provide practical implementations with depth-limited search and pruning heuristics (including a parity-aware backtracking rule), together with empirical evaluation. Independent assessments highlight the algorithm’s novelty and suggest an average-case behavior consistent with O(log y) iterations; we treat this as a conjecture supported by evidence rather than a proven bound. Completeness is not guaranteed under fixed search limits; a hybrid fallback to the Extended Euclidean algorithm ensures correctness when desired.
+We present a forward iterative method—a heuristic approach for computing modular multiplicative inverses. This method constructs the inverse, when successful, as a product of multipliers selected around a bounded multiplication constraint. We offer practical implementations with depth-limited search and pruning heuristics (including a parity-aware backtracking rule), together with empirical evaluation. Independent assessments suggest the algorithm's novelty and indicate average-case behavior consistent with O(log y) iterations; we treat this as a conjecture supported by evidence rather than a proven bound. Completeness is not guaranteed under fixed search limits; a hybrid fallback to the Extended Euclidean algorithm ensures correctness when desired.
 
-**Keywords:** modular arithmetic, multiplicative inverse, forward-iterative algorithm, computational number theory, backtracking, continued fractions, Stern–Brocot, heuristics
+**Keywords:** modular arithmetic, multiplicative inverse, forward method, computational number theory, backtracking, continued fractions, Stern–Brocot, heuristics
 
 ## 1. Introduction
 
@@ -23,10 +34,10 @@ Traditional methods include:
 - **Binary Extended GCD**: Optimized bitwise implementation
 - **Continued Fractions**: Uses convergents/quotients to construct Bézout coefficients
 
-### 1.3 Novel Contribution
+### 1.3 Contribution
 
-Our algorithm introduces:
-1. **Forward-iterative approach**: start from $x$ and construct forward toward remainder 1
+We offer this method with the following characteristics:
+1. **Forward iterative approach**: start from $x$ and construct forward toward remainder 1
 2. **Bounded multiplication constraint**: target multipliers satisfy $y < (r_i \cdot k_{i+1}) < (r_i + y)$
 3. **Product construction**: inverse computed as $\prod k_i \pmod{y}$
 4. **Backtracking and pruning**: offsets around $\lceil y/r_i\rceil$, skip non-decreasing remainders
@@ -62,7 +73,7 @@ The modular inverse $z$ satisfies $z \cdot x \equiv 1 \pmod{y}$, and is computed
 $$z = \prod_{i=1}^n k_i \pmod{y}$$
 
 ```javascript
-// Basic InverseMod algorithm implementation
+// Basic forward method implementation
 function inverseModBasic(x, y) {
     // Normalize x to be less than y
     x = x % y;
@@ -194,7 +205,7 @@ Reproducible commands are provided in Section 5 and Appendix A.
 
 | Method | Time Complexity | Space Complexity | Success Rate |
 |--------|-----------------|------------------|--------------|
-| Heuristic Forward Iteration (this work) | ~O(log y) avg (conj.) | O(log y) path storage | empirical |
+| Forward Method (this work) | ~O(log y) avg (conj.) | O(log y) path storage | empirical |
 | Extended Euclidean | $O(\log \min(x,y))$ | $O(1)$ | 100% |
 | Fermat's Little Theorem | $O(\log y \cdot M(\log y))$ | $O(\log y)$ | 100% |
 
@@ -278,7 +289,7 @@ function findKByBinarySearch(remainder, modulus) {
 
 **Mathematical Description:**
 
-This scenario tests cases where the basic InverseMod algorithm succeeds without requiring backtracking. For each test case $(x, y, z_{\text{expected}})$:
+This scenario tests cases where the basic forward method succeeds without requiring backtracking. For each test case $(x, y, z_{\text{expected}})$:
 
 **Verification Process:**
 1. Compute $z = \text{InverseMod}(x, y)$
@@ -403,7 +414,7 @@ node implementation/src/show-steps.js 4 6
 
 **Mathematical Description:**
 
-This scenario tests cases where the basic InverseMod algorithm fails due to early termination (reaching remainder 0 before finding the inverse), but the enhanced algorithm with backtracking succeeds. For each test case $(x, y, z_{\text{expected}})$:
+This scenario tests cases where the basic forward method fails due to early termination (reaching remainder 0 before finding the inverse), but the enhanced algorithm with backtracking succeeds. For each test case $(x, y, z_{\text{expected}})$:
 
 **Problem Analysis:**
 The basic algorithm may fail when:
@@ -802,7 +813,7 @@ cpExample11mod26(); // => { multipliers: [5, 9], inverse: 19 }
 
 **Mathematical Description:**
 
-This comprehensive testing framework validates the InverseMod algorithm across multiple categories of test cases. Each category tests different aspects of the mathematical correctness and edge cases.
+This comprehensive testing framework validates the forward method across multiple categories of test cases. Each category tests different aspects of the mathematical correctness and edge cases.
 
 **Test Categories:**
 
@@ -871,7 +882,7 @@ node implementation/src/test-framework.js --comprehensive
 
 **Mathematical Description:**
 
-This benchmarking framework empirically validates the theoretical complexity claims of the InverseMod algorithm by measuring performance across different problem sizes and computing statistical metrics.
+This benchmarking framework provides empirical observations regarding the theoretical complexity of the forward method by measuring performance across different problem sizes and computing statistical metrics.
 
 **Performance Metrics:**
 
@@ -997,12 +1008,14 @@ Empirical success rates depend on search parameters (offsets, depth, backtrack l
 
 ## 10. Conclusion
 
-We presented a forward-iterative heuristic for computing modular inverses:
+We have presented the forward iterative method, a heuristic approach for computing modular inverses with:
 - **Heuristic success** on many coprime pairs under practical search limits
 - **Conceptual simplicity** compared to backward Extended Euclidean derivations
 - **Educational value** that emphasizes remainder dynamics and search trade-offs
 
-Independent analyses corroborate the approach’s novelty and provide evidence for an average-case O(log y) iteration count, while rigorous bounds remain open. Empirical statistics (Section 3.2, Appendix A) and runnable commands make these claims directly reproducible. Open problems include formalizing conditions for success, deriving complexity bounds, and designing search strategies that approach completeness with practical performance.
+Independent analyses suggest the approach's novelty and provide evidence for an average-case O(log y) iteration count, while rigorous bounds remain open. Empirical statistics (Section 3.2, Appendix A) and runnable commands make these claims directly reproducible. Open problems include formalizing conditions for success, deriving complexity bounds, and designing search strategies that approach completeness with practical performance.
+
+We offer this work humbly, recognizing that all knowledge and understanding come from God. May this contribution serve the mathematical community and bring glory to the One who created the very principles of order and logic that undergird all of mathematics. To God be the glory, now and always.
 
 ## Appendix A. Reproducibility Guide
 
@@ -1047,4 +1060,8 @@ node implementation/src/show-steps.js 999999 1000000 --maxBacktracks=200 --maxNo
 ## Author
 
 **Cody Weber**  
-*Independent Researcher* 
+*Independent Researcher*
+
+---
+
+*Soli Deo Gloria* — To God alone be the glory 
