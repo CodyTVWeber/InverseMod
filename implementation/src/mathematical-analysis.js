@@ -1,5 +1,5 @@
 /**
- * Mathematical Analysis and Complexity Theory for InverseMod Algorithm
+ * Mathematical Analysis and Complexity Theory for Forward Method
  * Implementation of theoretical results and proofs
  */
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Setup script for InverseMod Algorithm project
+# Setup script for Forward Method project
 # Sets up Node.js environment and dependencies
 
-echo "Setting up InverseMod Algorithm project..."
+echo "Setting up Forward Method project..."
 
 # Check if Node.js is installed
 if ! command -v node &> /dev/null; then
