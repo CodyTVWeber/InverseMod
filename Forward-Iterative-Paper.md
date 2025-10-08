@@ -8,7 +8,7 @@ This research is offered as a humble acknowledgment that every discovery in math
 
 The motivation for developing this algorithm is to honor God through the pursuit of wisdom and the careful study of His creation.
 
-It is our prayer that this work may serve others and advance the collective understanding of mathematics.  Also, we pray the best for you, the one reading this. That your life is going well and this work is a benefit to you.
+It is our prayer that this work [](url)may serve others and advance the collective understanding of mathematics.  Also, we pray the best for you, the one reading this. That your life is going well and this work is a benefit to you.
 
 ## Abstract
 
@@ -33,7 +33,18 @@ Traditional methods include:
 - **Binary Extended GCD**: Optimized bitwise implementation
 - **Continued Fractions**: Uses convergents/quotients to construct Bézout coefficients
 
-### 1.3 Contribution
+### 1.3 Forward Iterative Method's Core Approach
+
+The new method uses a forward-iterative approach with bounded multiplication:
+
+1. **Initialization**: Start with $r_0 = x \bmod y$
+2. **Iteration**: For each step $i$:
+   - Choose multiplier $k_{i+1}$ such that $y < (r_i \times k_{i+1}) < (r_i + y)$
+   - Compute next remainder: $r_{i+1} = (r_i \times k_{i+1}) \bmod y$
+3. **Termination**: Continue until $r_n = 1$
+4. **Result**: $z = \prod_{i=1}^n k_i \pmod{y}$
+
+### 1.4 Contribution
 
 We offer this method with the following characteristics:
 1. **Forward iterative approach**: start from $x$ and construct forward toward remainder 1
