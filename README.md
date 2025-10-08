@@ -1,24 +1,20 @@
-# The Forward Iterative Method for Modular Multiplicative Inverses
+# The Forward Iterative Method for Modular Multiplicative Inverses 
 
-> *"The fear of the Lord is the beginning of knowledge: but fools despise wisdom and instruction."*  
-> — Proverbs 1:7 (KJV)
-
-## Dedication
-
-We humbly present this work with the sole purpose of giving glory to God, from whom all wisdom, knowledge, and understanding flow. This research is offered not as a monument to human achievement, but as a humble acknowledgment that every discovery in mathematics and science ultimately points back to the Creator who ordained the very principles we seek to understand.
-
-The motivation for developing this method is to honor God through the pursuit of wisdom and the careful study of His creation. We recognize that any insight gained or contribution made comes not from our own merit, but by God's grace.
-
-*Soli Deo Gloria* — To God alone be the glory
-
-## Author
-**Cody Weber**
+> (*Soli Deo Gloria*) "For the LORD gives wisdom; from his mouth come knowledge and understanding." — Proverbs 2:6 
 
 ## About
 
 This repository contains a forward iterative method for computing modular multiplicative inverses, developed in 2022. The method provides a forward-iterative approach to finding modular multiplicative inverses using bounded multiplication constraints and remainder tracking.
 
-A formal research paper documenting this method is available at the root of this repository: [`inverseMod-paper.md`](inverseMod-paper.md)
+## Research Paper
+
+The formal research paper is available at [`Forward-Iterative-Paper.md`](Forward-Iterative-Paper.md) and includes:
+
+- Complete mathematical foundation and algorithm definition
+- Empirical complexity analysis and performance metrics
+- Enhanced implementations with backtracking
+- Comprehensive testing framework documentation
+- Proposed improvements and future research directions
 
 ## Method Overview
 
@@ -46,7 +42,7 @@ The method uses a forward-iterative approach with bounded multiplication:
 ## Repository Structure
 
 ```
-├── inverseMod-paper.md          # Formal research paper
+├── Forward-Iterative-Paper.md    # Formal research paper
 ├── README.md                     # This file
 ├── LICENSE                       # MIT License
 │
@@ -163,16 +159,6 @@ Key findings from independent analysis:
 - Backtracking with parity awareness significantly improves success rates
 - Empirical evidence supports logarithmic average-case behavior
 
-## Research Paper
-
-The formal research paper is available at [`inverseMod-paper.md`](inverseMod-paper.md) and includes:
-
-- Complete mathematical foundation and algorithm definition
-- Empirical complexity analysis and performance metrics
-- Enhanced implementations with backtracking
-- Comprehensive testing framework documentation
-- Proposed improvements and future research directions
-
 ## License
 
 MIT License - See [LICENSE](LICENSE) file for details.
@@ -193,3 +179,6 @@ If you use this work in your research, please cite:
 ---
 
 *All glory to God, from whom all wisdom and knowledge flow.*
+
+## Author
+**Cody Weber**
