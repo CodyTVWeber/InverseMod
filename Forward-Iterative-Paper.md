@@ -21,7 +21,7 @@ We present a forward iterative method—a heuristic approach for computing modul
 ### 1.1 Problem Statement
 
 Given integers $x$ and $y$ where $\gcd(x, y) = 1$, find an integer $z$ such that:
-$$(z \cdot x) \equiv 1 \pmod{y}$$
+$(z \cdot x) mod{y} \equiv 1$
 
 This problem arises frequently in cryptography, computer algebra systems, and various computational mathematics applications.
 
