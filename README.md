@@ -1,3 +1,8 @@
+<!--
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+See LICENSE-CC-BY-4.0.md for details.
+-->
+
 # The Forward Iterative Method for Modular Multiplicative Inverses 
 
 > (*Soli Deo Gloria*) "For the LORD gives wisdom; from his mouth come knowledge and understanding." — Proverbs 2:6 
@@ -161,7 +166,21 @@ Findings from AI analysis:
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details.
+This project uses a dual licensing structure:
+
+### Documentation & Written Content (Markdown Files)
+All documentation, markdown files, and written content (including the research paper, README files, and analysis documents) are licensed under:
+
+**Creative Commons Attribution 4.0 International (CC BY 4.0)**
+- See [LICENSE-CC-BY-4.0.md](LICENSE-CC-BY-4.0.md) for full text
+- You are free to share and adapt with proper attribution
+
+### Source Code
+All source code (including implementations in TypeScript, JavaScript, Go, and related code files) is licensed under:
+
+**MIT License**
+- See [LICENSE](LICENSE) file for full text
+- Free to use, modify, and distribute
 
 ## Citation
 

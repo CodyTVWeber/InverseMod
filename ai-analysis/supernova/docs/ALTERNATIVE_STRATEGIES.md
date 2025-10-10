@@ -1,3 +1,8 @@
+<!--
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+See LICENSE-CC-BY-4.0.md for details.
+-->
+
 # Alternative Improvement Strategies for InverseMod Algorithm
 
 ## Date: September 23, 2025

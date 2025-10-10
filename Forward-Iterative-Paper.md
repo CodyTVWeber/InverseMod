@@ -1,3 +1,8 @@
+<!--
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+See LICENSE-CC-BY-4.0.md for details.
+-->
+
 # The Forward Iterative Method for Modular Multiplicative Inverses
 
 > "For the LORD gives wisdom; from his mouth come knowledge and understanding." — Proverbs 2:6

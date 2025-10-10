@@ -1,3 +1,8 @@
+<!--
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+See LICENSE-CC-BY-4.0.md for details.
+-->
+
 # Forward Iterative Method - JavaScript Implementation
 
 A comprehensive JavaScript implementation of the forward iterative method for computing modular multiplicative inverses, complete with mathematical analysis, testing frameworks, and alternative approaches.
