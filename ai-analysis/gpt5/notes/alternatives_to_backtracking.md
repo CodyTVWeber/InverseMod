@@ -1,3 +1,8 @@
+<!--
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+See LICENSE-CC-BY-4.0.md for details.
+-->
+
 # Alternatives to Backtracking: Approaches and Trade-offs
 
 This document surveys strategies beyond classic backtracking for solving goal-directed or constraint-heavy problems. Each approach can be used standalone or in hybrid with inverse reasoning.

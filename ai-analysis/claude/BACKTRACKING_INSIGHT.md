@@ -1,3 +1,8 @@
+<!--
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+See LICENSE-CC-BY-4.0.md for details.
+-->
+
 # Backtracking Insight Analysis
 ## Cody Weber's Observation
 ## Date: August 14, 2025
