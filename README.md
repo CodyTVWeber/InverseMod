@@ -28,6 +28,14 @@ The contribution is a clear **forward certificate viewpoint**:
 
 This makes the proof easy to inspect mathematically and easy to verify computationally.
 
+## Added in this final publication
+
+The paper now includes:
+
+- a formal complexity section with explicit theorems/proofs for verification and bounded search,
+- a comparison table versus Euclid and brute force,
+- a practical pros/cons analysis for academic and engineering use.
+
 ## Quick start
 
 ```bash

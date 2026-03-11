@@ -139,14 +139,105 @@ Check:
 11\cdot 19 = 209 \equiv 1 \pmod{26}.
 \]
 
-## 7. Complexity notes
+## 7. Complexity analysis and proofs
 
-- The theorem itself is constant-cost once a certificate is known.
-- Runtime depends on the search strategy.
-- Bounded DFS/backtracking has parameter-dependent behavior; worst-case growth remains open in this manuscript.
-- Euclidean fallback provides guaranteed completion in \(O(\log y)\)-style arithmetic complexity.
+We separate three tasks:
 
-## 8. Conclusion
+1. **certificate verification** (certificate already provided),
+2. **certificate search** (bounded DFS),
+3. **hybrid execution** (bounded DFS + Euclidean fallback).
+
+### 7.1 Complexity of certificate verification
+
+### Theorem 2 (verification cost)
+
+Given \(x,y\) and a certificate of length \(n\), checking
+\[
+r_i=(r_{i-1}k_i)\bmod y,\quad r_n=1,\quad
+x\cdot\Big(\prod_{i=1}^n k_i \bmod y\Big)\equiv 1\pmod y
+\]
+requires \(O(n)\) modular multiplications and \(O(1)\) auxiliary memory (or \(O(n)\) if all remainders are stored for audit output).
+
+### Proof
+
+The verifier performs one modular update for each \(k_i\), so exactly \(n\) transition steps. It also updates the running product modulo \(y\) once per step, again \(n\) operations. No nested loops over \(n\) are required. Therefore runtime is linear in certificate length. Memory is constant if only current state is retained; it is linear if the full trace is materialized. \(\square\)
+
+### 7.2 Complexity of bounded DFS search
+
+Let:
+
+- \(D\): maximum recursion depth (`maxDepth`);
+- \(O_f\): maximum offset (`maxOffset`);
+- \(B = O_f + 1\): branching factor upper bound per node.
+
+### Theorem 3 (bounded search upper bound)
+
+The bounded DFS search in the implementation runs in
+\[
+O(B^D)
+\]
+node expansions in the worst case and uses \(O(D)\) stack space.
+
+### Proof
+
+At each depth, at most \(B\) candidates are explored. The DFS exploration tree is therefore bounded by a full \(B\)-ary tree of depth \(D\), with
+\[
+1 + B + B^2 + \cdots + B^D = \frac{B^{D+1}-1}{B-1}
+\]
+nodes (for \(B>1\)). This is \(O(B^D)\).  
+DFS keeps only one active path on the recursion stack, so stack memory is \(O(D)\), aside from optional output traces. \(\square\)
+
+### Corollary 3.1 (with strict decrease filter)
+
+If the transition rule enforces \(0 < r_{i+1} < r_i\), then any single path has length at most \(r_0-1 \le y-1\). Hence the effective depth is
+\[
+D^\*=\min(D, y-1),
+\]
+giving worst-case bound \(O(B^{D^\*})\).
+
+### 7.3 Hybrid with Euclidean fallback
+
+### Theorem 4 (hybrid worst-case bound)
+
+For the hybrid method (bounded forward search followed by Extended Euclid on failure), total arithmetic steps are bounded by
+\[
+O(B^D + \log y),
+\]
+where the \(\log y\) term comes from the Euclidean fallback.
+
+### Proof sketch
+
+By Theorem 3, bounded search contributes \(O(B^D)\). If search fails, Extended Euclid runs with logarithmic iteration complexity in the modulus scale. Adding both terms yields \(O(B^D + \log y)\). \(\square\)
+
+## 8. Comparison with standard approaches
+
+| Method | Guarantee | Worst-case time (high level) | Interpretability of proof artifact |
+|---|---|---:|---|
+| Forward certificate **verification** (certificate given) | Yes | \(O(n)\) in certificate length | Excellent (explicit \(k\)-sequence + remainder trace) |
+| Forward certificate **search** (bounded DFS) | No (bounded heuristic) | \(O(B^D)\) | High |
+| Forward + Euclid fallback | Yes | \(O(B^D + \log y)\) | High (forward attempt + guaranteed fallback) |
+| Extended Euclidean algorithm | Yes | \(O(\log y)\) | Medium (Bézout coefficient trace) |
+| Brute-force scan of \(z\) | Yes | \(O(y)\) | Low |
+
+Practical reading: for production-critical systems, Extended Euclid is usually preferred for predictable performance; the forward approach is strongest as an explanatory and certificate-oriented method, optionally backed by Euclid.
+
+## 9. Pros and cons
+
+### Pros
+
+1. **Proof artifact is explicit:** the multiplier certificate is easy to inspect and verify.
+2. **Pedagogically clear:** "forward construction" can be intuitive for learners and non-specialists.
+3. **AI-readable trace:** discrete, stepwise transitions are straightforward for programmatic validation.
+4. **Composable:** can be safely combined with Euclidean fallback for guaranteed completion.
+
+### Cons
+
+1. **Search can be expensive:** bounded DFS can grow exponentially in depth bound.
+2. **Parameter sensitivity:** outcomes depend on `maxDepth`, `maxOffset`, and pruning rules.
+3. **No standalone bounded completeness guarantee:** without fallback, bounded search may fail.
+4. **Not generally faster than Euclid:** classical algorithms remain the default for efficiency-critical use.
+
+## 10. Conclusion
 
 This work contributes a transparent forward certificate lens for modular inverses:
 
