@@ -1,48 +1,30 @@
 {
-  "name": "forward-method",
+  "name": "forward-certificate-method",
   "version": "1.0.0",
-  "description": "Forward iterative method for computing modular multiplicative inverses with JavaScript implementations",
+  "description": "Proof-oriented forward certificate method for modular inverses",
   "main": "src/index.js",
   "scripts": {
-    "test": "node src/test-framework.js --comprehensive",
-    "test:unit": "node src/unit-tests.js",
-    "test:quick": "node src/test-framework.js --quick",
-    "test:scenarios": "node src/test-framework.js --scenarios",
-    "test:stress": "node src/test-framework.js --stress 1000 10000",
-    "steps": "node src/show-steps.js",
-    "demo": "node src/demo.js",
-    "analysis": "node src/mathematical-analysis.js",
-    "alternatives": "node src/alternative-approaches.js",
-    "lint": "echo 'Linting not configured yet'",
-    "build": "echo 'Build process not needed for this project'"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "node src/demo.js"
   },
   "keywords": [
     "modular-arithmetic",
     "multiplicative-inverse",
     "number-theory",
+    "proof-as-code",
     "algorithm",
-    "javascript",
-    "mathematical-paper"
+    "javascript"
   ],
   "author": "Cody Weber",
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/username/forward-method.git"
-  },
-  "bugs": {
-    "url": "https://github.com/username/forward-method/issues"
-  },
-  "homepage": "https://github.com/username/forward-method#readme",
   "devDependencies": {
     "vitest": "^3.2.4"
   },
   "files": [
-    "src/",
-    "README.md",
-    "LICENSE"
+    "src/"
   ]
 }
