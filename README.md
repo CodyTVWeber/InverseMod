@@ -24,6 +24,8 @@ something reliable and honest is in [`PLAN.md`](PLAN.md).
 
 This work does **not** claim to replace the Extended Euclidean Algorithm or to be the first method ever connected to modular inverses.
 
+For **prime** moduli the greedy forward step (multiply the remainder by \(\lceil y/r \rceil\), keep \(y\) fixed, take the product of the multipliers) is the Euclidean-type inversion recurrence that this project identifies with the Thomas–Keller–Larsen algorithm (IEEE Trans. Computers C-35(5):478–482, 1986, DOI [10.1109/TC.1986.1676791](https://doi.org/10.1109/TC.1986.1676791)). What this repository studies beyond that identification is the **composite-modulus** extension: when the same step leaves the unit group, the exact failure criterion, reflection and bounded wraps, and the empirical worst-case behaviour. See [`docs/prior-art.md`](docs/prior-art.md) and [`PLAN.md`](PLAN.md).
+
 The contribution is a clear **forward certificate viewpoint**:
 
 - Build a sequence of multipliers \(k_1, \dots, k_n\)
