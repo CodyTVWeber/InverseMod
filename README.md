@@ -18,7 +18,8 @@ worst-case behaviour, and a BigInt implementation with a step-by-step trace.
 2. **Code** — [`implementation/`](implementation/)
 3. **Measurements** — [`implementation/experiments/out/`](implementation/experiments/out/)
 4. **Prior-art log** — [`docs/prior-art.md`](docs/prior-art.md)
-5. **Assessment / plan** — [`PLAN.md`](PLAN.md)
+5. **Teaching visualizer** — [`docs/visualizer.html`](docs/visualizer.html) (open in a browser; no build step)
+6. **Assessment / plan** — [`PLAN.md`](PLAN.md)
 
 ## Origin and honesty note
 
@@ -63,6 +64,7 @@ npm run experiments
 ├── PLAN.md
 ├── README.md
 ├── docs/prior-art.md
+├── docs/visualizer.html
 ├── LICENSE
 ├── LICENSE-CC-BY-4.0.md
 └── implementation

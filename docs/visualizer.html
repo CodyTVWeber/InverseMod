@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forward chain visualizer</title>
+  <style>
+    :root { font-family: Georgia, "Times New Roman", serif; color: #222; }
+    body { max-width: 960px; margin: 1.5rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.4rem; }
+    label { margin-right: 0.75rem; }
+    input[type="text"] { width: 8rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-family: ui-monospace, monospace; font-size: 0.9rem; }
+    th, td { border: 1px solid #ccc; padding: 0.3rem 0.5rem; text-align: left; }
+    tr.blocked { background: #f8d0d0; }
+    tr.reflect { background: #e8f0ff; }
+    tr.done { background: #d8f0d8; }
+    .row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .panel { flex: 1; min-width: 280px; }
+    svg { width: 100%; height: 120px; background: #fafafa; border: 1px solid #ddd; }
+    .muted { color: #555; font-size: 0.95rem; }
+    button { margin-left: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Forward-chain modular inverse</h1>
+  <p class="muted">
+    Multiply remainder <em>r</em> by <em>k</em> = ceil(<em>y</em>/<em>r</em>), modulus fixed.
+    Reflection maps <em>r</em> &gt; <em>y</em>/2 to <em>y − r</em>.
+    A red row is where a composite modulus leaves the unit group.
+  </p>
+  <p>
+    <label>x <input id="x" type="text" value="11" /></label>
+    <label>y <input id="y" type="text" value="26" /></label>
+    <label><input id="reflect" type="checkbox" checked /> reflection</label>
+    <label><input id="euclid" type="checkbox" checked /> Euclid side by side</label>
+    <button id="go" type="button">Run</button>
+    <button id="ex1" type="button">11 mod 26</button>
+    <button id="ex2" type="button">500 mod 1001</button>
+    <button id="ex3" type="button">17 mod 23</button>
+  </p>
+  <p id="summary"></p>
+  <div class="row">
+    <div class="panel">
+      <h2>Forward chain</h2>
+      <div id="table"></div>
+      <svg id="line" viewBox="0 0 900 120"></svg>
+    </div>
+    <div class="panel" id="euclidPanel">
+      <h2>Extended Euclid</h2>
+      <div id="euclidTable"></div>
+    </div>
+  </div>
+  <script>
+    function gcd(a, b) {
+      a = a < 0n ? -a : a;
+      b = b < 0n ? -b : b;
+      while (b !== 0n) { const t = b; b = a % b; a = t; }
+      return a;
+    }
+    function euclidInverse(x, y) {
+      let oldR = ((x % y) + y) % y, r = y, oldS = 1n, s = 0n;
+      const rows = [];
+      while (r !== 0n) {
+        const q = oldR / r;
+        rows.push({ oldR, r, q, oldS, s });
+        const nextR = oldR - q * r, nextS = oldS - q * s;
+        oldR = r; r = nextR; oldS = s; s = nextS;
+      }
+      if (oldR !== 1n) return { inverse: null, rows };
+      return { inverse: ((oldS % y) + y) % y, rows };
+    }
+    function forwardChain(x, y, reflect) {
+      let r = ((x % y) + y) % y;
+      if (y <= 1n || r === 0n || gcd(r, y) !== 1n) {
+        return { ok: false, message: "no inverse", steps: [] };
+      }
+      const steps = [];
+      let z = 1n;
+      while (r !== 1n) {
+        if (reflect && 2n * r > y) {
+          const before = r;
+          r = y - r;
+          z = (z * (y - 1n)) % y;
+          steps.push({ kind: "reflect", k: y - 1n, before, after: r, blocked: false });
+          continue;
+        }
+        const k = (y + r - 1n) / r;
+        const next = r * k - y;
+        const g = gcd(next, y);
+        const blocked = g !== 1n;
+        steps.push({ kind: "multiply", k, before: r, after: next, product: r * k, blocked, g });
+        if (blocked) {
+          const inv = euclidInverse(r, y).inverse;
+          return {
+            ok: true,
+            method: "forward+euclid",
+            inverse: (z * inv) % y,
+            steps,
+            fallbackAt: r,
+            zPartial: z
+          };
+        }
+        z = (z * k) % y;
+        r = next;
+      }
+      return { ok: true, method: "forward", inverse: z, steps, fallbackAt: null };
+    }
+    function pos(v, y) {
+      return 20 + Number((v * 860n) / y);
+    }
+    function render() {
+      const x = BigInt(document.getElementById("x").value);
+      const y = BigInt(document.getElementById("y").value);
+      const reflect = document.getElementById("reflect").checked;
+      const showE = document.getElementById("euclid").checked;
+      document.getElementById("euclidPanel").style.display = showE ? "" : "none";
+      const result = forwardChain(x, y, reflect);
+      const summary = document.getElementById("summary");
+      if (!result.ok) {
+        summary.textContent = result.message;
+        document.getElementById("table").innerHTML = "";
+        return;
+      }
+      const check = (x * result.inverse) % y;
+      summary.innerHTML =
+        "<strong>method</strong> = " + result.method +
+        ", <strong>inverse</strong> = " + result.inverse +
+        ", check x·z ≡ " + check + " (mod y)" +
+        (result.fallbackAt != null ? ", blocked at r = " + result.fallbackAt : "");
+      let html = "<table><thead><tr><th>#</th><th>kind</th><th>r</th><th>k</th><th>r·k</th><th>next</th><th>note</th></tr></thead><tbody>";
+      result.steps.forEach((s, i) => {
+        const cls = s.blocked ? "blocked" : s.kind === "reflect" ? "reflect" : s.after === 1n ? "done" : "";
+        const note = s.blocked
+          ? "gcd(" + s.after + ", " + y + ") = " + s.g + " — leaves the unit group"
+          : s.kind === "reflect" ? "r → y−r" : s.after === 1n ? "done" : "";
+        html += "<tr class='" + cls + "'><td>" + (i + 1) + "</td><td>" + s.kind + "</td><td>" + s.before +
+          "</td><td>" + s.k + "</td><td>" + (s.product != null ? s.product : "") +
+          "</td><td>" + s.after + "</td><td>" + note + "</td></tr>";
+      });
+      html += "</tbody></table>";
+      document.getElementById("table").innerHTML = html;
+
+      const svg = document.getElementById("line");
+      let marks = '<line x1="20" y1="60" x2="880" y2="60" stroke="#333" />';
+      marks += '<text x="20" y="100" font-size="12">0</text>';
+      marks += '<text x="860" y="100" font-size="12">' + y + "</text>";
+      const start = ((x % y) + y) % y;
+      result.steps.forEach((s, i) => {
+        const x1 = pos(s.before, y);
+        const x2 = pos(s.after, y);
+        const color = s.blocked ? "#c00" : s.kind === "reflect" ? "#36c" : "#080";
+        marks += '<line x1="' + x1 + '" y1="60" x2="' + x2 + '" y2="40" stroke="' + color +
+          '" marker-end="url(#arrow)" />';
+        marks += '<circle cx="' + x1 + '" cy="60" r="3" fill="' + color + '" />';
+        if (i === 0) {
+          marks += '<text x="' + x1 + '" y="20" font-size="11">' + s.before + "</text>";
+        }
+        marks += '<text x="' + x2 + '" y="' + (s.blocked ? 20 : 18) + '" font-size="11" fill="' +
+          color + '">' + s.after + "</text>";
+      });
+      svg.innerHTML = '<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#333" /></marker></defs>' + marks;
+
+      if (showE) {
+        const e = euclidInverse(x, y);
+        let eh = "<table><thead><tr><th>old r</th><th>r</th><th>q</th><th>s</th></tr></thead><tbody>";
+        e.rows.forEach((row) => {
+          eh += "<tr><td>" + row.oldR + "</td><td>" + row.r + "</td><td>" + row.q + "</td><td>" + row.oldS + "</td></tr>";
+        });
+        eh += "</tbody></table><p>inverse = " + e.inverse + "</p>";
+        document.getElementById("euclidTable").innerHTML = eh;
+      }
+    }
+    document.getElementById("go").onclick = render;
+    document.getElementById("ex1").onclick = () => {
+      document.getElementById("x").value = "11";
+      document.getElementById("y").value = "26";
+      render();
+    };
+    document.getElementById("ex2").onclick = () => {
+      document.getElementById("x").value = "500";
+      document.getElementById("y").value = "1001";
+      render();
+    };
+    document.getElementById("ex3").onclick = () => {
+      document.getElementById("x").value = "17";
+      document.getElementById("y").value = "23";
+      render();
+    };
+    render();
+  </script>
+</body>
+</html>
