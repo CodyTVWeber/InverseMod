@@ -1,13 +1,13 @@
 const {
   gcd,
   verifyCertificate,
-  forwardInverse,
+  forwardChainInverse,
   euclidInverse
-} = require("./forward-proof");
+} = require("./forward-chain");
 
 module.exports = {
   gcd,
   verifyCertificate,
-  forwardInverse,
+  forwardChainInverse,
   euclidInverse
 };
