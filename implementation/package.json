@@ -1,12 +1,13 @@
 {
   "name": "forward-certificate-method",
   "version": "1.0.0",
-  "description": "Proof-oriented forward certificate method for modular inverses",
+  "description": "Engel-expansion (forward chain) modular inverse with explanatory trace",
   "main": "src/index.js",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "demo": "node src/demo.js"
+    "demo": "node src/demo.js",
+    "experiments": "node experiments/success-rate.js && node experiments/worst-case.js && node experiments/worst-case-structure.js && node experiments/worst-case-families.js"
   },
   "keywords": [
     "modular-arithmetic",
