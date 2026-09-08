@@ -68,3 +68,19 @@ Prime `y` is 100% success for every `M` (as required by `gcd(k, y) = 1` for `k <
 Heuristic `P(success) ≈ ∏_{p|y} (1 − 1/p)^L` with `L` the mean chain length: for a typical odd semiprime with small factors this is the right order of magnitude (a 10^6 odd composite with a factor 3 has a 2/3 survival per step; `L ≈ 12` gives (2/3)^12 ≈ 0.8% if 3 always divides y, but most odd composites are not divisible by 3, so the mixture sits near 35–40%). The CSV is the measurement; the product formula is a heuristic, not a theorem.
 
 Larger `M` buys success, especially on even `y`: at y < 10^7, even moduli go from 0.07% (`M=1`) to 45.6% (`M=8`) to 86.0% (`M=32`). On mixed y < 10^7, `M=32` reaches 92.9% with mean steps still comparable to Euclid (13.05 vs 13.21).
+
+## Task 2.5 — candidate families for a Q1 lower bound
+
+Script: `worst-case-families.js`. CSV: `out/worst-case-families.csv`.
+No proof is claimed. `W_full` is exhaustive `W(y)` when `y < 500000`; otherwise only `W` at a distinguished `x` is recorded.
+
+1. **Midpoint `x = (y−1)/2` on the same primes as Task 2.3.** This is the `y = 2r+1` family. At k = 22 it *is* the exhaustive worst case (`W = 39`). At smaller k it is often close but not always the argmax (k = 10: midpoint 10 steps vs worst 11; k = 16: 15 vs 23). Ratio `W_at_x / k` oscillates between about 0.86 and 1.77 and does not blow up on this range.
+
+2. **`x = floor(y/3)` (`y ≈ 3r+1`).** Ratios stay between 0.47 and 0.80 — milder than the midpoint family.
+
+3. **`y =` next prime of `lcm(1..n)+1`.** Exhaustive `W` where cheap: y = 421 has `W = 16` and `W/log2 y = 1.84`, the largest ratio seen in this family. Larger members (y = 12,252,259 and 232,792,561) were only probed at the midpoint (`W_at_x` = 32 and 44). Ratios are not monotonically increasing.
+
+4. **`y =` next prime of primorial(n)+1.** Exhaustive `W` through y = 30,047 (`W = 21`, ratio 1.41). Larger probes do not show a runaway ratio.
+
+**Conclusion:** none of the tested families gives `W(y)/log2(y)` growing without bound on the computed range. The midpoint / `y = 2r+1` family remains the best *practical* source of hard instances, but it is not a demonstrated `ω(log y)` construction.
+
