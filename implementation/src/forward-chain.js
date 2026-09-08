@@ -185,6 +185,14 @@ function verifyCertificate(xIn, yIn, multipliers) {
         inverseFromProduct: null
       };
     }
+    if (k <= 0n) {
+      return {
+        valid: false,
+        reason: "invalid multiplier",
+        remainders,
+        inverseFromProduct: null
+      };
+    }
     r = (r * k) % y;
     remainders.push(r);
     productMod = (productMod * k) % y;

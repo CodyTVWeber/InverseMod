@@ -65,8 +65,12 @@ function showCase(x, y, options = {}, label = "") {
   }
 
   console.log(`inverse = ${result.inverse}`);
-  const proof = verifyCertificate(x, y, result.certificate);
-  console.log(`certificate verified: ${proof.valid}`);
+  if (result.method === "forward+euclid") {
+    console.log("partial certificate (not a complete chain; Euclid tail used): verified = n/a");
+  } else {
+    const proof = verifyCertificate(x, y, result.certificate);
+    console.log(`certificate verified: ${proof.valid}`);
+  }
   return result;
 }
 

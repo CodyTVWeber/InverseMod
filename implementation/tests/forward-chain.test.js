@@ -179,6 +179,17 @@ describe("non-invertible inputs", () => {
   });
 });
 
+describe("verifyCertificate", () => {
+  it("rejects non-positive multipliers", () => {
+    const zero = verifyCertificate(11, 26, [0n]);
+    expect(zero.valid).toBe(false);
+    expect(zero.reason).toBe("invalid multiplier");
+    const neg = verifyCertificate(11, 26, [-3n]);
+    expect(neg.valid).toBe(false);
+    expect(neg.reason).toBe("invalid multiplier");
+  });
+});
+
 describe("performance guard", () => {
   it("completes 10,000 random calls with y < 2^53 in under 2 seconds", () => {
     const rng = mulberry32(42);
