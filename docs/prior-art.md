@@ -131,3 +131,67 @@ Each row is **yes/no** for “does TKL 1986 already contain this?”, with a con
 Until the PDF is read, citations of TKL in the paper and README will be limited to facts supported by the IEEE abstract (Euclidean-type inversion; comparable iteration counts; Mersenne-prime implementation advantage) and to Öztürk’s Algorithm X as a secondary restatement of the Mersenne case. The implemented greedy chain will be described as the Engel remainder recurrence (fixed dividend, `ceil` quotients) studied here for inversion, **not** as a verbatim TKL listing.
 
 If a later reader obtains the TKL PDF and the general (non-Mersenne) procedure *is* the quotient-multiply loop, the “TKL has?” cells for those two rows should be flipped to **yes** and the confidence raised. That confirmation is still outstanding.
+
+---
+
+# Open questions status (Task 0.2)
+
+`PLAN.md` §A.5 poses two questions that this repository treats as the research content:
+
+- **Q1 (worst case).** Let `W(y) = max_x` (multiply-steps of greedy+reflection from `x` to `1` modulo a prime `y`). Is `W(y) = Θ(log y)` with a larger constant than Euclid, or is it `ω(log y)`?
+- **Q2 (composite failure probability).** For random odd composite `y`, the greedy chain (`m = 1`) succeeds on a slowly decaying fraction of coprime `x`. Does the heuristic `P(success) ≈ ∏_{p | y} (1 − 1/p)^L` (with `L` the chain length) hold, and how does the wrap bound `M` trade off against success rate?
+
+Neither Google Scholar, MathSciNet, nor a dedicated arXiv API was available in this environment. Searches were run via web search (and direct fetches of PDFs that those searches returned). Queries and what they returned are recorded below so the search can be repeated.
+
+## Queries run and what they returned
+
+| # | Query | What came back |
+|---|---|---|
+| 1 | `Thomas Keller Larsen Calculation of Multiplicative Inverses Over GF(P) Efficiently Where P is a Mersenne Prime algorithm` | IEEE abstract (DOI 10.1109/TC.1986.1676791); MaRDI/zbMATH DE 3941647; Crossref record (6 citations). No open PDF. |
+| 2 | `Thomas Keller Larsen modular inverse "floor(p/s)+1" Mersenne prime algorithm` | No hit that restates TKL as `floor(p/s)+1`. Hits were Fermat inversion for pseudo-Mersenne primes (Scott ePrint 2018/1038; Dey–Sarkar ePrint 2018/985). |
+| 3 | `"Thomas" "Keller" "Larsen" multiplicative inverses Mersenne citing papers algorithm description` | Öztürk WPI M.S. thesis 2005 and the CHES 2004 paper *Low-Power Elliptic Curve Cryptography Using Scaled Modular Arithmetic* (Öztürk–Sunar–Savaş), both of which restate TKL as **Algorithm X** (binary/shift Euclid for `2^q−1`). Tuffner/Öztürk Appendix B is the only line-by-line secondary pseudocode found. |
+| 4 | `fixed modulus Euclidean inversion worst case recurrence remainder "(-y) mod r" modular inverse` | No paper on this exact map. Standard Euclid / Bézout sources; cp-algorithms recursive inverse (changing modulus) with a pointer to Pierce-expansion length. |
+| 5 | `arxiv "Thomas" "Keller" "Larsen" inverse Mersenne OR "fixed modulus" Euclidean inversion worst-case steps` | No arXiv preprint of TKL and no arXiv analysis of `r ← (−y) mod r`. Bernstein–Yang *TCHES* 2019 (constant-time gcd / inversion) appeared as the modern baseline, not as a TKL follow-up. |
+| 6 | `zbMATH Thomas Keller Larsen multiplicative inverses Mersenne "modified Euclidean" review algorithm` | zbMATH DE 3941647 keywords only; no review text restating the algorithm. |
+| 7 | `Hars "Modular Inverse Algorithms Without Multiplications" Thomas Keller Larsen` | Hars, *EURASIP J. Embedded Systems* 2006, DOI 10.1155/ES/2006/32192: left-shift / right-shift / Euclidean inverse survey. **Does not cite TKL** in the snippets retrieved. Useful comparison paper; not a TKL follow-up. |
+| 8 | `Pierce expansions length modular inverse recurrence worst case "ceil" remainder` | Erdős–Shallit, *J. Théor. Nombres Bordeaux* 3 (1991), 43–53 (PDF fetched); OEIS A006784; Mays, *Fibonacci Quart.* 25 (1987), 204–213. **Engel’s algorithm is the greedy `ceil` remainder recurrence with fixed dividend.** |
+| 9 | `Engel expansion modular inverse "ceil(p/a)" product of quotients algorithm worst case` | Same Engel/Pierce cluster; no inversion-complexity paper treating the product of Engel quotients as a modular inverse. |
+| 10 | `Hirzebruch-Jung continued fraction worst case length rational "ceil" Euclidean algorithm fixed modulus` | HJ continued fractions use `ceil` quotients but **change both arguments** (like Euclid), not a fixed modulus. Worst-case HJ expansions can be long (runs of 2’s). Related but not Q1. |
+| 11 | `Mays "Iterating the division algorithm" Fibonacci Quarterly 1987 remainder recurrence` | Confirmed: Mays studies Euclid, Pierce (`b = a q + r` iterated with fixed `b`), and related remainder recurrences. Open PDF at `https://www.fq.math.ca/Scanned/25-3/mays.pdf`. |
+| 12 | `Collins "Computing Multiplicative Inverses in GF(p)" 1969 forward backward Euclidean inversion` | Collins 1969 abstract confirmed (forward vs backward Euclid / Fermat). Not the fixed-modulus map. |
+| 13 | `composite modulus multiplicative inverse "gcd" quotient fails Euclidean "not coprime" success probability` | Only the elementary fact that inverses exist iff `gcd(x,y)=1`. **No paper** on the success probability of a greedy `ceil(y/r)` chain on composite `y`. |
+| 14 | `ieeexplore 1676791 Thomas Keller Larsen multiplicative inverses algorithm description keywords` | Abstract + citation count; no body. |
+| 15 | Direct fetch of DOI, IEEE stamp URL, and Crossref `ielx5` PDF URL | Paywall HTML (HTTP 418 / login page). Crossref JSON confirmed metadata and the Collins citation. |
+
+No MathSciNet session was available. No additional TKL follow-up that analyses worst-case `W(y)` or composite success rates was found among the six Crossref citations or the Öztürk/Hars/Bernstein–Yang/Pornin cluster.
+
+## Status of Q1
+
+**Verdict: `open`, with a related literature that partially answers the *unreflected* chain.**
+
+- The unreflected greedy map `r ← r·ceil(y/r) − y` **is** Engel’s algorithm (Mays 1987; Erdős–Shallit 1991). For the Engel length `E(a,b)` those papers prove `E(a,b) = O(b^{1/3+ε})` and a logarithmic lower bound `E(2^n−1, 2^n) = n`. They explicitly say the true order is not known; they speculate something like `O((log b)^2)` for the sibling Pierce length. That is **not** a theorem for `W(y)`.
+- Q1 as stated uses **reflection** (`r > y/2 ⇒ r ← y−r`) and restricts `y` to primes. No source was found that studies this reflected map, records `W(y)`, or proves `W(y) = O(log y)` vs `ω(log y)`.
+- Hirzebruch–Jung continued fractions also use `ceil` quotients but are Euclidean (both arguments change) and therefore do not bound `W(y)`.
+- TKL’s abstract claims comparable *maximum* iterations to Euclid for their algorithm; if that algorithm is Algorithm X (binary Euclid on Mersenne primes), the claim is about a different recurrence than `W(y)`.
+
+So: related Engel-series bounds exist; **Q1 itself is open**. Phase 2’s exhaustive `W(y)` table is, as far as this search shows, new data.
+
+## Status of Q2
+
+**Verdict: `open`.**
+
+The identity `gcd(r', y) = gcd(k, y)` when `gcd(r, y) = 1` is elementary and was not found stated for this chain. No paper was found that measures greedy-chain success rates on even vs odd composite moduli, nor that writes the heuristic `∏_{p|y} (1−1/p)^L` or studies the wrap bound `M` as a success/cost trade-off.
+
+The cp-algorithms recursive inverse (changing modulus: `inv(a) = m − ⌊m/a⌋·inv(m mod a)`) is a different failure mode and is usually stated only for prime `m`.
+
+## References used in this note
+
+1. E. J. Thomas, J. M. Keller, G. N. Larsen, “The Calcualtion of Multiplicative Inverses Over GF(P) Efficiently Where P is a Mersenne Prime,” *IEEE Trans. Comput.* C-35(5):478–482, 1986. DOI 10.1109/TC.1986.1676791. (Abstract + Crossref metadata only.)
+2. G. E. Collins, “Computing Multiplicative Inverses in GF(p),” *Math. Comp.* 23(105):197–200, 1969. DOI 10.1090/S0025-5718-1969-0242345-5.
+3. E. Öztürk, *Low Power Elliptic Curve Cryptography*, M.S. thesis, WPI, 2005. Appendix B.
+4. E. Öztürk, B. Sunar, E. Savaş, “Low-Power Elliptic Curve Cryptography Using Scaled Modular Arithmetic,” in *CHES 2004*, LNCS 3156, Springer, 2004. DOI 10.1007/978-3-540-28632-5_7.
+5. M. E. Mays, “Iterating the Division Algorithm,” *Fibonacci Quart.* 25 (1987), 204–213.
+6. P. Erdős, J. O. Shallit, “New bounds on the length of finite Pierce and Engel series,” *J. Théor. Nombres Bordeaux* 3 (1991), 43–53.
+7. L. Hars, “Modular Inverse Algorithms Without Multiplications for Cryptographic Applications,” *EURASIP J. Embedded Systems* 2006, 32192. DOI 10.1155/ES/2006/32192.
+8. D. J. Bernstein, B.-Y. Yang, “Fast constant-time gcd computation and modular inversion,” *TCHES* 2019.
+9. T. Pornin, “Optimized Binary GCD for Modular Inversion,” Cryptology ePrint 2020/972.
