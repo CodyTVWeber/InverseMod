@@ -3,44 +3,44 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 See LICENSE-CC-BY-4.0.md for details.
 -->
 
-# Forward Certificate Method for Modular Inverses
+# Forward Iterative Modular Inverse
 
 > "For the LORD gives wisdom; from his mouth come knowledge and understanding." — Proverbs 2:6
 
-This repository is intentionally simplified as a final public publication with three parts:
+A small, honest study of a Euclidean-type modular inverse that keeps the modulus
+fixed: multiply the remainder \(r\) by \(k = \lceil y/r\rceil\), take the product
+of the \(k\)'s. For prime moduli this is the Thomas–Keller–Larsen algorithm
+(IEEE Trans. Computers, 1986, DOI [10.1109/TC.1986.1676791](https://doi.org/10.1109/TC.1986.1676791)).
+This repository studies the composite-modulus extension, reflection, measured
+worst-case behaviour, and a BigInt implementation with a step-by-step trace.
 
-1. **Mathematical paper and proof**  
-   - [`Forward-Iterative-Paper.md`](Forward-Iterative-Paper.md)
-2. **Proof as code** (for readers, engineers, and AI systems)  
-   - [`implementation/src/forward-proof.js`](implementation/src/forward-proof.js)
-3. **Faithful framing**  
-   - humble claims, reproducible results, and gratitude to God for all truth and wisdom.
+1. **Note** — [`Forward-Iterative-Paper.md`](Forward-Iterative-Paper.md)
+2. **Code** — [`implementation/`](implementation/)
+3. **Measurements** — [`implementation/experiments/out/`](implementation/experiments/out/)
+4. **Prior-art log** — [`docs/prior-art.md`](docs/prior-art.md)
+5. **Assessment / plan** — [`PLAN.md`](PLAN.md)
 
-An assessment of the method against prior art (Thomas–Keller–Larsen, 1986), measured
-behaviour of the current implementation, and a phased plan for turning the project into
-something reliable and honest is in [`PLAN.md`](PLAN.md).
+## Origin and honesty note
+
+The method began as Cody Weber's own exploration; he was curious whether it was novel.
+
+The answer, stated plainly: the core step is the Thomas–Keller–Larsen algorithm from 1986, the certificate theorem is elementary, and the method is not faster than Extended Euclid.
+
+AI systems (Cursor cloud agents) took the exploration further than the original work by identifying the prior art, deriving the exact composite-modulus failure criterion, measuring the behaviour, and building the reproducible implementation and experiments.
+
+What remains genuinely open is the worst-case growth question Q1 in the paper (is \(W(y)\) \(\Theta(\log y)\) or \(\omega(\log y)\)?). What remains genuinely useful is the pedagogical trace and the clean implementation.
+
+Offered with thanks to God for all wisdom and truth. *Soli Deo Gloria.*
 
 ## What is being claimed
 
-This work does **not** claim to replace the Extended Euclidean Algorithm or to be the first method ever connected to modular inverses.
+- **Correctness.** If a multiplier list takes the remainder to 1, its product modulo \(y\) is an inverse (elementary). Reflection is multiplication by \(y-1\).
+- **Composite moduli.** A greedy step stays invertible iff \(\gcd(k, y) = 1\) iff \(\gcd(r', y) = 1\). Prime \(y\) never fails. Even \(y\) almost always fails for \(M = 1\); odd composites succeed on a slowly decaying fraction (about 43% at \(y < 10^4\), 34% at \(y < 10^9\); see `success-rate.csv`).
+- **Performance.** Not faster than Extended Euclid. The implementation is \(O(\log y)\) per call with Euclid fallback and never silently wrong.
+- **Worst case (open).** On primes just above \(2^k\), \(k = 10\ldots 22\), greedy+reflection's worst multiply-step count over \(\log_2 y\) rises from 1.10 to 1.77 (`worst-case.csv`). No proof that this is \(\Theta(\log y)\) or \(\omega(\log y)\).
+- **Not claimed:** cryptographic relevance, speed advantage, or novelty of the core step.
 
-For **prime** moduli the greedy forward step (multiply the remainder by \(\lceil y/r \rceil\), keep \(y\) fixed, take the product of the multipliers) is the Euclidean-type inversion recurrence that this project identifies with the Thomas–Keller–Larsen algorithm (IEEE Trans. Computers C-35(5):478–482, 1986, DOI [10.1109/TC.1986.1676791](https://doi.org/10.1109/TC.1986.1676791)). What this repository studies beyond that identification is the **composite-modulus** extension: when the same step leaves the unit group, the exact failure criterion, reflection and bounded wraps, and the empirical worst-case behaviour. See [`docs/prior-art.md`](docs/prior-art.md) and [`PLAN.md`](PLAN.md).
-
-The contribution is a clear **forward certificate viewpoint**:
-
-- Build a sequence of multipliers \(k_1, \dots, k_n\)
-- Track remainders \(r_i\) by \(r_i = (r_{i-1}k_i) \bmod y\)
-- If a sequence reaches \(r_n = 1\), then \(\prod_i k_i \pmod y\) is an inverse of \(x\)
-
-This makes the proof easy to inspect mathematically and easy to verify computationally.
-
-## Added in this final publication
-
-The paper now includes:
-
-- a formal complexity section with explicit theorems/proofs for verification and bounded search,
-- a comparison table versus Euclid and brute force,
-- a practical pros/cons analysis for academic and engineering use.
+Numbers in the paper and in this README come from `implementation/experiments/out/*.csv` or from cited references.
 
 ## Quick start
 
@@ -49,25 +49,39 @@ cd implementation
 npm install
 npm test
 npm run demo
+node src/cli.js 11 26 --max-wrap 4
+npm run experiments
 ```
+
+`npm run experiments` regenerates the CSVs (about two minutes: 20,000 pairs per success-rate cell; exhaustive worst-case for \(k = 10\ldots 22\)). Override with `SUCCESS_SAMPLES`, `WORST_K_MIN`, `WORST_K_MAX`.
 
 ## Repository layout
 
 ```text
 .
 ├── Forward-Iterative-Paper.md
+├── PLAN.md
 ├── README.md
+├── docs/prior-art.md
 ├── LICENSE
 ├── LICENSE-CC-BY-4.0.md
 └── implementation
     ├── README.md
     ├── package.json
     ├── src
-    │   ├── forward-proof.js
+    │   ├── forward-chain.js
     │   ├── index.js
-    │   └── demo.js
-    └── tests
-        └── forward-proof.test.js
+    │   ├── demo.js
+    │   └── cli.js
+    ├── tests/forward-chain.test.js
+    └── experiments
+        ├── lib.js
+        ├── success-rate.js
+        ├── worst-case.js
+        ├── worst-case-structure.js
+        ├── worst-case-families.js
+        ├── NOTES.md
+        └── out/*.csv
 ```
 
 ## Licenses
@@ -78,10 +92,11 @@ npm run demo
 ## Citation
 
 ```bibtex
-@misc{weber2026forwardcertificate,
-  title={Forward Certificate Method for Modular Multiplicative Inverses},
+@misc{weber2026tkl-revisited,
+  title={The {Thomas--Keller--Larsen} Modular Inverse Revisited:
+         Composite Moduli, Reflection, and Empirical Worst-Case Behaviour},
   author={Cody Weber},
   year={2026},
-  note={Public manuscript and proof-as-code release. Soli Deo Gloria.}
+  note={Public manuscript and implementation. Soli Deo Gloria.}
 }
 ```
