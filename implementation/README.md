@@ -19,6 +19,7 @@ The code is CommonJS and uses `BigInt` throughout.
 - `src/demo.js` — documented traces
 - `src/cli.js` — command-line driver
 - `tests/forward-chain.test.js` — correctness and performance tests
+- `experiments/` — reproducible success-rate and worst-case measurements
 
 ## Run
 
@@ -27,7 +28,10 @@ npm install
 npm test
 npm run demo
 node src/cli.js 11 26 --max-wrap 4
+npm run experiments
 ```
+
+`npm run experiments` regenerates CSVs under `experiments/out/`. Defaults: 20,000 pairs per success-rate cell; exhaustive worst-case for primes just above `2^k` with `k = 10..22` (`WORST_K_MIN` / `WORST_K_MAX` override). See `experiments/NOTES.md`.
 
 ## API
 
