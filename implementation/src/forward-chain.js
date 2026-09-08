@@ -134,8 +134,81 @@ function forwardChainInverse(xIn, yIn, options = {}) {
   };
 }
 
+/**
+ * Verify a multiplier certificate: r_i = (r_{i-1} * k_i) mod y, r_n = 1,
+ * and x * product(k) ≡ 1 (mod y). Reflection steps contribute k = y - 1.
+ */
+function verifyCertificate(xIn, yIn, multipliers) {
+  const y = toBigInt(yIn);
+  if (y <= 1n) {
+    return {
+      valid: false,
+      reason: "y must be > 1",
+      remainders: [],
+      inverseFromProduct: null
+    };
+  }
+
+  const x = toBigInt(xIn);
+  const r0 = ((x % y) + y) % y;
+  if (r0 === 0n || gcd(r0, y) !== 1n) {
+    return {
+      valid: false,
+      reason: "no inverse",
+      remainders: [],
+      inverseFromProduct: null
+    };
+  }
+
+  if (!Array.isArray(multipliers)) {
+    return {
+      valid: false,
+      reason: "certificate must be a multiplier array",
+      remainders: [r0],
+      inverseFromProduct: null
+    };
+  }
+
+  const remainders = [r0];
+  let r = r0;
+  let productMod = 1n;
+
+  for (const raw of multipliers) {
+    let k;
+    try {
+      k = toBigInt(raw);
+    } catch {
+      return {
+        valid: false,
+        reason: `invalid multiplier: ${raw}`,
+        remainders,
+        inverseFromProduct: null
+      };
+    }
+    r = (r * k) % y;
+    remainders.push(r);
+    productMod = (productMod * k) % y;
+  }
+
+  const theoremCheck = (r0 * productMod) % y === 1n;
+  const terminalCheck = remainders[remainders.length - 1] === 1n;
+  const valid = theoremCheck && terminalCheck;
+
+  return {
+    valid,
+    reason: valid
+      ? "certificate is valid"
+      : terminalCheck
+        ? "product is not an inverse"
+        : "certificate does not terminate at remainder 1",
+    remainders,
+    inverseFromProduct: theoremCheck ? productMod : null
+  };
+}
+
 module.exports = {
   gcd,
   euclidInverse,
-  forwardChainInverse
+  forwardChainInverse,
+  verifyCertificate
 };
