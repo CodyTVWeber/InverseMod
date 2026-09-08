@@ -16,6 +16,10 @@ This repository is intentionally simplified as a final public publication with t
 3. **Faithful framing**  
    - humble claims, reproducible results, and gratitude to God for all truth and wisdom.
 
+An assessment of the method against prior art (Thomas–Keller–Larsen, 1986), measured
+behaviour of the current implementation, and a phased plan for turning the project into
+something reliable and honest is in [`PLAN.md`](PLAN.md).
+
 ## What is being claimed
 
 This work does **not** claim to replace the Extended Euclidean Algorithm or to be the first method ever connected to modular inverses.
