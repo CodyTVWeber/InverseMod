@@ -3,10 +3,31 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 See LICENSE-CC-BY-4.0.md for details.
 -->
 
-# Prior art: Thomas–Keller–Larsen and related inversion algorithms
+# Prior art: Engel expansion, and an unconfirmed TKL lead
 
-**Date of this note:** 2026-09-08  
-**Purpose:** Task 0.1 of `PLAN.md` — confirm what Thomas–Keller–Larsen 1986 actually contains, in the notation of this repository (`x`, `y`, `r`, `k`).
+**Date of this note:** 2026-09-08 (reframed same day after review).
+
+## Primary identification: Engel expansion
+
+The implemented recurrence
+\[
+r \leftarrow r\cdot\lceil y/r\rceil - y = (-y)\bmod r
+\]
+with **fixed** modulus \(y\) **is** the classical **Engel expansion** of the rational \(x/y\).
+
+- F. Engel, “Entwicklung der Zahlen nach Stammbrüchen,” 1913.
+- Wikipedia, “Engel expansion,” accessed 2026-09-08: if \(u_i\) is a rational \(x/y\), then \(u_{i+1} = ((-y)\bmod x)/y\).
+- The Engel expansion terminates at numerator 0. When every intermediate numerator stays coprime to \(y\), it passes through numerator 1 and the last digit is \(y\). The forward chain is the Engel digits of \(x/y\) minus that final \(y\); the modular inverse is the product of all Engel digits except the last.
+- Length \(E(x,y)\): Erdős–Rényi–Szüsz (1958) \(E \le x\); Erdős–Shallit (1991) \(E = O(y^{1/3+\varepsilon})\) and \(E > c\log y\) infinitely often; they conjecture \(O((\log y)^2)\) for the sibling Pierce length (Pierce is \(r \leftarrow y \bmod r\)). A 2011 Berkeley undergraduate note gives an explicit \(\Omega(\log y)\) family of Engel length exactly \(x\).
+- **Q1 without reflection** is that length question restricted to prime denominators. **Q1 with reflection** is a variant. Both are **known open problems**, not new ones.
+
+The rest of this file is the Task 0.1/0.2 log on Thomas–Keller–Larsen 1986, which **PLAN.md A.3 identified with high confidence** and which **was not confirmed**. That material is retained as a search record; it is not the primary identification.
+
+---
+
+## Thomas–Keller–Larsen 1986 (unconfirmed)
+
+**Purpose of this section (original Task 0.1):** confirm what TKL 1986 contains. **Outcome:** the PDF was not obtained; the only detailed secondary transcription (Öztürk Algorithm X) is a binary/shift Euclid loop for Mersenne primes, not the Engel remainder map. TKL is **possibly related, unconfirmed**.
 
 ## Access status
 
@@ -167,14 +188,14 @@ No MathSciNet session was available. No additional TKL follow-up that analyses w
 
 ## Status of Q1
 
-**Verdict: `open`, with a related literature that partially answers the *unreflected* chain.**
+**Verdict: `open` — this is the known Erdős–Shallit Engel-length question, not a new problem.**
 
-- The unreflected greedy map `r ← r·ceil(y/r) − y` **is** Engel’s algorithm (Mays 1987; Erdős–Shallit 1991). For the Engel length `E(a,b)` those papers prove `E(a,b) = O(b^{1/3+ε})` and a logarithmic lower bound `E(2^n−1, 2^n) = n`. They explicitly say the true order is not known; they speculate something like `O((log b)^2)` for the sibling Pierce length. That is **not** a theorem for `W(y)`.
-- Q1 as stated uses **reflection** (`r > y/2 ⇒ r ← y−r`) and restricts `y` to primes. No source was found that studies this reflected map, records `W(y)`, or proves `W(y) = O(log y)` vs `ω(log y)`.
-- Hirzebruch–Jung continued fractions also use `ceil` quotients but are Euclidean (both arguments change) and therefore do not bound `W(y)`.
-- TKL’s abstract claims comparable *maximum* iterations to Euclid for their algorithm; if that algorithm is Algorithm X (binary Euclid on Mersenne primes), the claim is about a different recurrence than `W(y)`.
+- Without reflection the multiply-step count is Engel length \(E(x,y)\) minus the final digit \(y\). Erdős–Rényi–Szüsz (1958): \(E \le x\). Erdős–Shallit (1991): \(E = O(y^{1/3+\varepsilon})\) and \(E > c\log y\) infinitely often; Pierce-length conjecture \(O((\log y)^2)\). Explicit \(\Omega(\log y)\) family (2011 Berkeley note). Restricted to prime \(y\), this is still open.
+- With reflection (`r > y/2 ⇒ r ← y−r`) it is a variant of the same question. No source was found that studies the reflected map.
+- Hirzebruch–Jung continued fractions use `ceil` quotients but change both arguments (Euclid-like) and do not bound \(W(y)\).
+- TKL’s abstract (if it even concerns this recurrence) is unconfirmed and is not a length bound.
 
-So: related Engel-series bounds exist; **Q1 itself is open**. Phase 2’s exhaustive `W(y)` table is, as far as this search shows, new data.
+Phase 2’s exhaustive reflected \(W(y)\) table on primes just above \(2^k\) is measurement of that known open problem, not a new question.
 
 ## Status of Q2
 
@@ -192,6 +213,9 @@ The cp-algorithms recursive inverse (changing modulus: `inv(a) = m − ⌊m/a⌋
 4. E. Öztürk, B. Sunar, E. Savaş, “Low-Power Elliptic Curve Cryptography Using Scaled Modular Arithmetic,” in *CHES 2004*, LNCS 3156, Springer, 2004. DOI 10.1007/978-3-540-28632-5_7.
 5. M. E. Mays, “Iterating the Division Algorithm,” *Fibonacci Quart.* 25 (1987), 204–213.
 6. P. Erdős, J. O. Shallit, “New bounds on the length of finite Pierce and Engel series,” *J. Théor. Nombres Bordeaux* 3 (1991), 43–53.
-7. L. Hars, “Modular Inverse Algorithms Without Multiplications for Cryptographic Applications,” *EURASIP J. Embedded Systems* 2006, 32192. DOI 10.1155/ES/2006/32192.
+7. F. Engel, “Entwicklung der Zahlen nach Stammbrüchen,” 1913.
+8. P. Erdős, A. Rényi, P. Szüsz, “On Engel’s and Sylvester’s series,” *Ann. Univ. Sci. Budapest. Eötvös Sect. Math.* 1 (1958), 7–32.
+9. “Engel expansion,” Wikipedia, accessed 2026-09-08. https://en.wikipedia.org/wiki/Engel_expansion
+10. L. Hars, “Modular Inverse Algorithms Without Multiplications for Cryptographic Applications,” *EURASIP J. Embedded Systems* 2006, 32192. DOI 10.1155/ES/2006/32192.
 8. D. J. Bernstein, B.-Y. Yang, “Fast constant-time gcd computation and modular inversion,” *TCHES* 2019.
 9. T. Pornin, “Optimized Binary GCD for Modular Inversion,” Cryptology ePrint 2020/972.

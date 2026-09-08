@@ -3,7 +3,7 @@ This work is licensed under a Creative Commons Attribution 4.0 International Lic
 See LICENSE-CC-BY-4.0.md for details.
 -->
 
-# The Thomas–Keller–Larsen Modular Inverse Revisited: Composite Moduli, Reflection, and Empirical Worst-Case Behaviour
+# The Engel Expansion as a Modular Inverse: Composite Moduli, Reflection, and Empirical Worst-Case Behaviour
 
 **Author:** Cody Weber  
 **Version:** Public revision (2026)  
@@ -17,13 +17,13 @@ See LICENSE-CC-BY-4.0.md for details.
 
 This method began as my own exploration of a simple question: can one build a modular inverse by always multiplying the current remainder forward, keeping the modulus fixed, until the remainder is 1? I was curious whether that viewpoint was new.
 
-It is not. The core step is the Thomas–Keller–Larsen (TKL) algorithm published in 1986 for prime moduli. The certificate theorem (the product of the multipliers is an inverse) is an elementary fact about the unit group. The method is not faster than the Extended Euclidean algorithm.
+It is not. The core step is the Engel expansion of \(x/y\), known since 1913. The certificate theorem (the product of the multipliers is an inverse) is elementary. The method is not faster than the Extended Euclidean algorithm. Whether the 1986 Thomas–Keller–Larsen paper also uses this recurrence could not be confirmed (the IEEE article is paywalled; the only detailed secondary transcription is a different, Mersenne-specific binary algorithm).
 
-What this revision adds, beyond that first exploration, was carried further by AI systems (Cursor cloud agents): they identified the 1986 prior art, derived the exact failure criterion on composite moduli, measured success rates and worst-case step counts, and built the reproducible BigInt implementation and experiment harness in `implementation/`.
+AI systems (Cursor cloud agents) took the exploration further than the original work: they identified the prior art, derived the exact failure criterion on composite moduli, measured the behaviour, and built the tested BigInt implementation and experiment harness in `implementation/`.
 
-What remains genuinely open is the worst-case growth question Q1 below. What remains genuinely useful is the pedagogical trace and the small, tested implementation.
+What remains open is the worst-case length question Q1, which is the known Erdős–Shallit problem on Engel length (restricted here to prime denominators, and with an optional reflection). What remains useful is the pedagogical trace and the small, tested implementation.
 
-Offered with thanks to God for every true thing in this note, and with no claim that the core idea was mine to name.
+Offered with thanks to God for every true thing in this note, and with no claim that the core idea was mine to name. *Soli Deo Gloria.*
 
 ---
 
@@ -33,13 +33,13 @@ Given coprime integers \(x, y\), a multiplicative inverse of \(x\) modulo \(y\) 
 \[
 r \leftarrow r\cdot\lceil y/r\rceil - y,
 \]
-taking the product of the multipliers \(\lceil y/r\rceil\) as the inverse. For **prime** \(y\) this is the Euclidean-type inversion of Thomas, Keller, and Larsen (IEEE Trans. Computers, 1986). This note does not claim that core step as new.
+taking the product of the multipliers \(\lceil y/r\rceil\) as the inverse. This recurrence **is** the classical Engel expansion of the rational \(x/y\) (F. Engel, 1913). This note does not claim that core step as new.
 
 The contributions are:
 
 1. The **exact failure criterion** on composite \(y\): a greedy step stays in \((\mathbb{Z}/y\mathbb{Z})^*\) if and only if \(\gcd(k, y) = 1\), equivalently \(\gcd(r', y) = 1\).
 2. **Reflection** (\(r > y/2 \mapsto y-r\)) and **bounded \(m\)-wraps** \(k = \lceil m y/r\rceil\), with measured trade-offs.
-3. An empirical study of the worst-case multiply-step count \(W(y)\) on primes just above \(2^k\) (\(k = 10\ldots 22\)), leaving open whether \(W(y) = \Theta(\log y)\) or \(\omega(\log y)\).
+3. An empirical study of the worst-case multiply-step count \(W(y)\) on primes just above \(2^k\) (\(k = 10\ldots 22\)). Without reflection this is the Erdős–Shallit Engel-length question restricted to prime denominators; with reflection it is a variant. Both remain open.
 4. A verified BigInt implementation that emits the multiplier trace and falls back to Extended Euclid when the greedy step leaves the unit group.
 
 Every numerical table below is reproduced by `cd implementation && npm run experiments` from the committed CSVs in `implementation/experiments/out/`, or is cited to a named reference.
@@ -107,21 +107,23 @@ The implementation (`forwardChainInverse`) applies reflection when enabled, then
 
 ## 2. Prior art
 
-A longer source log is `docs/prior-art.md`. The 1986 paper itself is paywalled; the claims below are labelled by how they were obtained.
+A longer source log is `docs/prior-art.md`.
 
-**Thomas–Keller–Larsen 1986.** E. J. Thomas, J. M. Keller, G. N. Larsen, “The Calcualtion of Multiplicative Inverses Over GF(P) Efficiently Where P is a Mersenne Prime,” *IEEE Trans. Computers* C-35(5):478–482, May 1986. DOI [10.1109/TC.1986.1676791](https://doi.org/10.1109/TC.1986.1676791). (The spelling “Calcualtion” is IEEE’s published title.)
+**Engel expansion (primary identification).** F. Engel, “Entwicklung der Zahlen nach Stammbrüchen,” 1913. For a positive real the Engel series is \(u = 1/a_1 + 1/(a_1 a_2) + 1/(a_1 a_2 a_3) + \cdots\) with nondecreasing positive integers \(a_i\). On a rational \(x/y\), Wikipedia’s article “Engel expansion” (accessed 2026-09-08) states the update outright: if \(u_i = x/y\), then \(u_{i+1} = ((-y) \bmod x)/y\). In this repository’s remainder language that is
+\[
+r \leftarrow r\cdot\lceil y/r\rceil - y = (-y)\bmod r,
+\]
+with \(y\) fixed. The Engel expansion of \(x/y\) terminates at numerator 0; when every intermediate numerator stays coprime to \(y\), it passes through numerator 1 and the last Engel digit is \(y\). The forward chain is then the Engel digits of \(x/y\) minus that final \(y\), and the modular inverse is the product of all Engel digits except the last.
 
-From the **IEEE abstract** (primary, high confidence): the algorithm is Euclidean-type inversion with approximately the same average and maximum iteration counts as Extended Euclid; when \(P\) is a Mersenne prime it is cheaper on a mod-\(P\) processor; when division and multiplication run simultaneously, Euclid has fewer subiterations.
+Length \(E(x,y)\) of a terminating Engel expansion: Erdős–Rényi–Szüsz (1958) prove \(E \le x\); Erdős–Shallit (1991) prove \(E = O(y^{1/3+\varepsilon})\) and \(E > c\log y\) infinitely often, and conjecture \(O((\log y)^2)\) for the sibling **Pierce** length (Pierce is \(r \leftarrow y \bmod r\); Shallit’s Open Problem Garden entry “A discrete iteration related to Pierce expansions” carries a \$50 prize). A 2011 Berkeley undergraduate note constructs rationals \(x/(k\cdot\mathrm{lcm}(2,\ldots,x)+1)\) of Engel length exactly \(x\), an explicit \(\Omega(\log y)\) family. Mays (1987) presents the same remainder iteration as “iterating the division algorithm.”
 
-From **Öztürk 2005** (secondary transcription of TKL’s Mersenne case as “Algorithm X”): a binary extended-Euclidean loop using shifts modulo \(2^q-1\), not a line-by-line listing of the \(\lceil y/r\rceil\) recurrence. Whether the unread TKL body also states the quotient-multiply form used here was **not confirmed from primary text**. This note therefore cites TKL for Euclidean-type fixed-field inversion with Euclid-like iteration counts, and describes the implemented recurrence as that greedy quotient-multiply chain.
+**Thomas–Keller–Larsen 1986 (possibly related, unconfirmed — paywalled).** E. J. Thomas, J. M. Keller, G. N. Larsen, “The Calcualtion of Multiplicative Inverses Over GF(P) Efficiently Where P is a Mersenne Prime,” *IEEE Trans. Computers* C-35(5):478–482, May 1986. DOI [10.1109/TC.1986.1676791](https://doi.org/10.1109/TC.1986.1676791). The IEEE **abstract** describes a Euclidean-type inversion with Euclid-like iteration counts, specialized to Mersenne primes. The body was not obtained. The only detailed secondary transcription (Öztürk 2005, “Algorithm X”) is a binary/shift extended-Euclid loop for \(p = 2^q-1\), not the \(\lceil y/r\rceil\) map. This note does **not** identify the core step with TKL.
 
-The same remainder map with fixed dividend is classical **Engel’s algorithm** (Mays, *Fibonacci Quart.* 25 (1987); Erdős–Shallit, *J. Théor. Nombres Bordeaux* 3 (1991)): \(y = r q_1 - r_1 = r_1 q_2 - r_2 = \cdots\) with \(q_i = \lceil y/r_{i-1}\rceil\). Those papers bound Engel *length*, not modular-inverse complexity with reflection.
-
-**Collins 1969.** G. E. Collins, “Computing Multiplicative Inverses in GF(\(p\)),” *Math. Comp.* 23(105):197–200. Distinguishes forward and backward Extended Euclid (changing modulus). Cited by TKL.
+**Collins 1969.** G. E. Collins, “Computing Multiplicative Inverses in GF(\(p\)),” *Math. Comp.* 23(105):197–200. Distinguishes forward and backward Extended Euclid (changing modulus).
 
 **Modern cryptographic inversion.** Bernstein–Yang, “Fast constant-time gcd computation and modular inversion,” *TCHES* 2019; Pornin, “Optimized Binary GCD for Modular Inversion,” IACR ePrint 2020/972. Variable-time division methods, including this one, are not competitive there. Hars, “Modular Inverse Algorithms Without Multiplications,” *EURASIP J. Embedded Systems* 2006, surveys Euclid-type iteration counts.
 
-Nothing in that literature was found that (i) states Theorem 4, (ii) measures greedy success on composite \(y\), or (iii) tabulates \(W(y)\) with reflection on primes just above \(2^k\). See `docs/prior-art.md` for the search log.
+Nothing in that literature was found that (i) states Theorem 4, (ii) measures greedy success on composite \(y\), or (iii) tabulates reflected \(W(y)\) on primes just above \(2^k\). See `docs/prior-art.md`.
 
 ---
 
@@ -211,13 +213,13 @@ PLAN.md §A.4 conjectured that worst cases are runs with constant \(q\) and \(s_
 
 The clean case is \(k = 22\), \(y = 4{,}194{,}319\), \(x = 2{,}097{,}159 = (y-1)/2\): thirteen opening steps with \(q = 2\) and \(s = 1, 3, 9, 27, 81, \ldots\). The k = 10 argmax \(x = 450\) (midpoint would be 515) instead has strictly increasing \(q\) from the first step.
 
-### 4.3 Question Q1 (open)
+### 4.3 Question Q1 (the Erdős–Shallit length question)
 
-Is \(W(y) = \Theta(\log y)\) with a larger constant than Euclid, or is it \(\omega(\log y)\)?
+Without reflection, the multiply-step count from \(x\) to \(1\) modulo prime \(y\) is the Engel length \(E(x,y)\) minus one (the final digit \(y\) is dropped). So **Q1 without reflection is the Erdős–Rényi–Szüsz / Erdős–Shallit length question restricted to prime denominators.** Known bounds: \(E \le x\) (1958); \(E = O(y^{1/3+\varepsilon})\) and \(E > c\log y\) infinitely often (1991); an explicit \(\Omega(\log y)\) family of length exactly \(x\) (2011 Berkeley note). The true order is open; Erdős–Shallit conjecture \(O((\log y)^2)\) for the sibling Pierce length. **With reflection**, Q1 is a variant of that same open problem (remainders are folded into \((0, y/2]\)).
 
-Related literature (Engel length without reflection: Erdős–Shallit 1991) gives a polynomial upper bound \(O(y^{1/3+\varepsilon})\) and a logarithmic lower bound, and does not address reflection or the restriction to prime \(y\). No proof either way is offered here.
+This note adds exhaustive \(W(y)\) on primes just above \(2^k\) for \(k = 10\ldots 22\), with reflection. No proof either way is offered.
 
-Task 2.5 tried families \(x = (y-1)/2\), \(x = \lfloor y/3\rfloor\), next prime of \(\operatorname{lcm}(1..n)+1\), and next prime of primorial\((n)+1\) (`out/worst-case-families.csv`). None produced a \(W(y)/\log_2 y\) that grew without bound on the computed range. The midpoint family is the best practical source of hard instances and coincides with the exhaustive argmax at \(k = 22\), but it is not a demonstrated super-logarithmic construction.
+Task 2.5 tried families \(x = (y-1)/2\), \(x = \lfloor y/3\rfloor\), next prime of \(\operatorname{lcm}(1..n)+1\), and next prime of primorial\((n)+1\) (`out/worst-case-families.csv`). None produced a \(W(y)/\log_2 y\) that grew without bound on the computed range. The midpoint family is the best practical source of hard instances and coincides with the exhaustive argmax at \(k = 22\).
 
 ---
 
@@ -225,7 +227,7 @@ Task 2.5 tried families \(x = (y-1)/2\), \(x = \lfloor y/3\rfloor\), next prime 
 
 | Method | Completeness | Worst-case iterations (this data / literature) | Constant-time? | Uses general division? | Explanatory \(k\)-trace? |
 |---|---|---|---|---|---|
-| Greedy+reflection (prime \(y\)) | Yes (Thm. 4) | \(W(y) \le 39\) at 22-bit primes; Q1 open. TKL abstract: comparable to Euclid | No | Yes | Yes |
+| Greedy+reflection (prime \(y\)) | Yes (Thm. 4) | \(W(y) \le 39\) at 22-bit primes; Q1 is the Erdős–Shallit Engel-length question (open) | No | Yes | Yes |
 | Greedy+\(M\)-wrap, no fallback | No (bounded \(M\)) | Same order when it succeeds; see §3.2 | No | Yes | Yes, if it finishes |
 | Greedy+Euclid fallback | Yes | \(O(\log y)\) via the tail; partial trace plus Bézout | No | Yes | Partial |
 | Extended Euclid | Yes | Lamé: at most \(\approx 5\log_{10} y\) divisions for \(\gcd\); here Euclid worst \(\approx 1.18\log_2 y\) | No | Yes | Bézout coefficients |
@@ -264,13 +266,13 @@ Verification of a claimed certificate is \(O(n)\) modular multiplies (`verifyCer
 
 ## 7. Limitations
 
-- **Not a novel core algorithm.** TKL 1986; Engel’s remainder map is older still.
+- **Not a novel core algorithm.** The core step is the Engel expansion of \(x/y\) (1913). Whether TKL 1986 also uses it is unconfirmed.
 - **Not faster than Extended Euclid.** On mixed random moduli the greedy \(M=1\) chain succeeds on \(0.3080\) of pairs with \(y < 10^7\) and \(0.1910\) at 128-bit (`success-rate.csv`); the implementation still returns a correct inverse via the Euclid tail. Euclid alone is simpler when no trace is needed.
 - **Not of cryptographic interest.** Variable-time, division-based, and on composite moduli incomplete without a fallback. Bernstein–Yang / Pornin win on every axis that matters there.
 - **The multiplier list is not a distinguished proof object.** \(z\) with \(xz \equiv 1 \pmod{y}\) is the certificate. The list is a lesson.
 - **Bounded wraps are incomplete.** A complete forward search with unbounded \(m\) *is* Euclid.
-- **Q1 is open.** Rising \(W/\log_2 y\) is not a proof of \(\omega(\log y)\).
-- **TKL’s PDF was not re-read.** Mersenne-specific Algorithm X in Öztürk 2005 is a binary-shift loop. Citations of TKL in this note are limited to the IEEE abstract plus that secondary source; see `docs/prior-art.md`.
+- **Q1 is open, and it is a known open problem.** Without reflection it is Engel length on prime denominators (Erdős–Shallit 1991); with reflection it is a variant. Rising \(W/\log_2 y\) on 10–22-bit primes is not a proof of \(\omega(\log y)\).
+- **TKL 1986 was not obtained.** The identification of this chain with TKL is withdrawn. See `docs/prior-art.md`.
 
 ---
 
@@ -288,15 +290,18 @@ Tests: exhaustive agreement with Euclid for \(3 \le y \le 300\); 10,000 random p
 
 ## References
 
-1. E. J. Thomas, J. M. Keller, G. N. Larsen, “The Calcualtion of Multiplicative Inverses Over GF(P) Efficiently Where P is a Mersenne Prime,” *IEEE Trans. Computers* C-35(5):478–482, 1986. DOI 10.1109/TC.1986.1676791.
-2. G. E. Collins, “Computing Multiplicative Inverses in GF(\(p\)),” *Math. Comp.* 23(105):197–200, 1969. DOI 10.1090/S0025-5718-1969-0242345-5.
-3. E. Öztürk, *Low Power Elliptic Curve Cryptography*, M.S. thesis, Worcester Polytechnic Institute, 2005. Appendix B.
-4. M. E. Mays, “Iterating the Division Algorithm,” *Fibonacci Quarterly* 25 (1987), 204–213.
-5. P. Erdős, J. O. Shallit, “New bounds on the length of finite Pierce and Engel series,” *J. Théor. Nombres Bordeaux* 3 (1991), 43–53.
-6. L. Hars, “Modular Inverse Algorithms Without Multiplications for Cryptographic Applications,” *EURASIP J. Embedded Systems* 2006, 32192. DOI 10.1155/ES/2006/32192.
-7. D. J. Bernstein, B.-Y. Yang, “Fast constant-time gcd computation and modular inversion,” *IACR Trans. Cryptographic Hardware and Embedded Systems*, 2019.
-8. T. Pornin, “Optimized Binary GCD for Modular Inversion,” Cryptology ePrint Archive 2020/972.
-9. Committed measurements: `implementation/experiments/out/success-rate.csv`, `worst-case.csv`, `worst-case-families.csv`, and `worst-case-structure.md`.
+1. F. Engel, “Entwicklung der Zahlen nach Stammbrüchen,” *Verhandlungen der 52. Versammlung deutscher Philologen und Schulmänner in Marburg*, 1913, pp. 190–191.
+2. P. Erdős, A. Rényi, P. Szüsz, “On Engel’s and Sylvester’s series,” *Ann. Univ. Sci. Budapest. Eötvös Sect. Math.* 1 (1958), 7–32.
+3. P. Erdős, J. O. Shallit, “New bounds on the length of finite Pierce and Engel series,” *J. Théor. Nombres Bordeaux* 3 (1991), 43–53.
+4. “Engel expansion,” *Wikipedia*, accessed 2026-09-08. https://en.wikipedia.org/wiki/Engel_expansion
+5. M. E. Mays, “Iterating the Division Algorithm,” *Fibonacci Quarterly* 25 (1987), 204–213.
+6. G. E. Collins, “Computing Multiplicative Inverses in GF(\(p\)),” *Math. Comp.* 23(105):197–200, 1969. DOI 10.1090/S0025-5718-1969-0242345-5.
+7. E. J. Thomas, J. M. Keller, G. N. Larsen, “The Calcualtion of Multiplicative Inverses Over GF(P) Efficiently Where P is a Mersenne Prime,” *IEEE Trans. Computers* C-35(5):478–482, 1986. DOI 10.1109/TC.1986.1676791. (Abstract only; identification with the Engel recurrence is unconfirmed.)
+8. E. Öztürk, *Low Power Elliptic Curve Cryptography*, M.S. thesis, Worcester Polytechnic Institute, 2005. Appendix B.
+9. L. Hars, “Modular Inverse Algorithms Without Multiplications for Cryptographic Applications,” *EURASIP J. Embedded Systems* 2006, 32192. DOI 10.1155/ES/2006/32192.
+10. D. J. Bernstein, B.-Y. Yang, “Fast constant-time gcd computation and modular inversion,” *IACR Trans. Cryptographic Hardware and Embedded Systems*, 2019.
+11. T. Pornin, “Optimized Binary GCD for Modular Inversion,” Cryptology ePrint Archive 2020/972.
+12. Committed measurements: `implementation/experiments/out/success-rate.csv`, `worst-case.csv`, `worst-case-families.csv`, and `worst-case-structure.md`.
 
 ---
 

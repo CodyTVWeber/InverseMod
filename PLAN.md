@@ -489,3 +489,13 @@ Sanity values (verified with the reference implementation in Task 1.1):
 - On 10,000 random pairs with `y < 2^53` (mostly composite `y`), the reference
   implementation returned a correct inverse every time in 46 ms total and used
   the Euclid tail in about 47% of calls. This is the expected behaviour, not a bug.
+
+---
+
+## Errata
+
+**A.3 identified the core step as Thomas–Keller–Larsen 1986 with high confidence.** That identification was **not confirmed**. The TKL PDF is paywalled; the only detailed secondary transcription (Öztürk 2005 Algorithm X) is a binary/shift Euclid loop for Mersenne primes, not the quotient-multiply recurrence.
+
+**The correct classical identification is the Engel expansion** of the rational \(x/y\) (F. Engel, 1913). Wikipedia’s “Engel expansion” article (accessed 2026-09-08) states the update \(u_{i+1} = ((-y)\bmod x)/y\) for rational \(u_i = x/y\), which is \(r \leftarrow r\cdot\lceil y/r\rceil - y\) with \(y\) fixed.
+
+**Q1 corresponds to the Erdős–Shallit length question** on Engel expansions (Erdős–Rényi–Szüsz 1958; Erdős–Shallit 1991), restricted to prime denominators; with reflection it is a variant of that known open problem, not a new one.
